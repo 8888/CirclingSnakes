@@ -5,6 +5,9 @@
 var game_core = require('./core.js');
 var game = new game_core(true); // GameCore(is_server)
 
+// TODO: at this point game_server.js is redundant and just passing to index.js
+module.exports = game;
+
 // TODO: create a server-side specific loop
 /*
 // game loop

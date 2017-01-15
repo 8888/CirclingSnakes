@@ -32,6 +32,13 @@ socket.on('user_connected', function(id) {
     console.log("Your ID is: ", game.client_id);
 });
 
+socket.on('update_player_list', function(updated_players) {
+    game.players = updated_players;
+
+    // send feedback to server, to be used for sending data, input, etc to the server
+    socket.emit('received_players', game.client_id);
+})
+
 // game loop
 window.onload = function() {
     game.init();
