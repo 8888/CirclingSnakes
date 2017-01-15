@@ -17,15 +17,13 @@ http.listen(3000, function(){
 });
 
 /* socket.io server */
+var game_server = require('./game_server.js');
+
 io.on('connection', function (client) {
     // calls when a client makes a new connection to io server
     client.userid = uuid(); // generate an id
-    client.emit('onconnected', client.userid);
+    client.emit('user_connected', client.userid);
     console.log("user connected: " + client.userid);
-
-    client.on('added_player', function(id) {
-        io.emit('added_player', id);
-    })
 
     //calls when a client disconnects
     client.on('disconnect', function () {

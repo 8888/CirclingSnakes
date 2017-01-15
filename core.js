@@ -1,50 +1,41 @@
-
 /*
-This will containt all of the main game logic.
-This will get used by the client and the server so everyone is using the same functions.
-This will hold game state on the client and the server
-
-As of now, we are drawing on the server as well, this is not correct
--When each instance is created, !server will receive drawing
--There needs to be game objects etc
--Add loops to check for handling input, updating, displaying
+This contains all of the game logic.
+This is used by the client and the server so everyone is using the same functions.
 */
-
-
-
 'use strict';
-// canvas parameters
-var canvas = document.getElementById("canvasElement");
-canvas.tabIndex = 0;
-canvas.focus();
-var canvas_width = canvas.width;
-var canvas_height = canvas.height;
-var canvas_bounds = canvas.getBoundingClientRect();
-var ctx = canvas.getContext("2d");
 
-// game parameters
-var players = [];
+/* GameCore class */
+var GameCore = function(is_server) {
+    // game core to be run on clients and server
+    this.is_server = is_server;
+    this.gameDelta = null; // delta for time usage
+    this.players = []; // array of player ids
+}
 
+GameCore.prototype.init = function() {
+    console.log("init"); // placeholder
+}
 
-/* Listen for server events */
-socket.on('onconnected', function(id) {
-    socket.emit('added_player', id);
-})
+GameCore.prototype.update = function(delta) {
+    this.gameDelta = delta;
+}
 
-socket.on('added_player', function(id) {
-    players.push(id);
-    draw_names();
-})
+GameCore.prototype.display = function() {
+    this.ctx.clearRect(0, 0, this.canvas_width, this.canvas_height);
 
-function draw_names() {
-    ctx.clearRect(0, 0, canvas_width, canvas_height);
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "24px Verdana";
-    for (var user = 0; user < players.length; user++) {
-        ctx.fillText(
-            players[user],
+    // draw names
+    this.ctx.fillStyle = "#ffffff";
+    this.ctx.font = "24px Verdana";
+    for (var user = 0; user < this.players.length; user++) {
+        this.ctx.fillText(
+            this.players[user],
             100,
             100 + (36 * user)
         );
     }
+}
+
+// export GameCore() so it is callable from a require
+if (typeof global != "undefined") { // do this only on server-side
+    module.exports = GameCore;
 }
