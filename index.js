@@ -9,34 +9,32 @@ var express = require('express'),
 app.use('/', express.static(__dirname + '/')); // allows inlcude of files ex: in <script>
 
 app.get('/', function(req, res){
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(__dirname + '/index.html'); // send index.html to clients
 });
 
 http.listen(3000, function(){
-    console.log('listening on *:3000');
+    console.log('listening on *:3000'); // listen on port 3000
 });
 
 /* socket.io server */
-var game_server = require('./game_server.js');
+var game_server = require('./game_server.js'); // GameCore object
 
 io.on('connection', function(client) {
-    // calls when a client makes a new connection to io server
+    // new client connects to server
     client.userid = uuid(); // generate an id
-    client.emit('user_connected', client.userid);
-    console.log("user connected: " + client.userid);
+    let new_player = game_server.server_add_player(client.userid); // server creates a new Player object
+    client.emit('user_connected', client.userid); // provide the client w/ its id
+    io.emit('update_player_list', game_server.players); // sends the updated player list to all clients
 
-    // sends the updated player list to all clients
-    game_server.players.push(client.userid);
-    io.emit('update_player_list', game_server.players);
-
-    //calls when a client disconnects
     client.on('disconnect', function() {
-        // call when a client disconnects
+        // client disconnects
         console.log("user disconnected: " + client.userid);
+        // TODO: Remove from the array of players/sockets
     });
 
-    // receive client feedback, to be used for receiving data or inputs etc
-    client.on('received_players', function(id) {
-        console.log("Client " + id + " received the player list");
+    client.on('player_moved', function(client_id, x, y) {
+        // a client tells the server they moved their player
+        game_server.move_player(client_id, x, y);
+        io.emit('update_player_list', game_server.players); // TODO: This is incorrect and temporary. This needs to be done through periodic updates through the server's loop
     });
 });
