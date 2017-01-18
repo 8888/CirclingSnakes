@@ -1,59 +1,56 @@
 /*
-This contains all of the game logic.
-This is used by the client and the server so everyone is using the same functions.
+ * This contains all of the game logic shared by the client and server.
 */
 'use strict';
 
 /* GameCore class */
-var GameCore = function(is_server) {
+var GameCore = function() {
     // game core to be run on clients and server
-    this.is_server = is_server;
-    this.gameDelta = null; // delta for time usage
-    this.client_id = null; // clients are assigned an id, server remains null
-    this.players = {} // client_id: player object
-    this.client_player = null; // individual player object belonging to that client
+    this.players = {};
+};
+
+GameCore.prototype.playerCreate = function(id) {
+    // TODO: pass in game parameters: width, height;
+    let p = new Player(id, Math.trunc(Math.random() * 250), Math.trunc(Math.random() * 250));
+    this.playerAdd(p);
+    return p;
+};
+
+GameCore.prototype.playerAdd = function(player) {
+    console.log("core.playerAdd", player.id);
+    this.players[player.id] = player;
+};
+
+GameCore.prototype.playerDelete = function(id) {
+    console.log("core.playerDelete", id);
+    delete this.players[id];
 }
 
-GameCore.prototype.init = function() {
-    console.log("init"); // placeholder
-}
-
-GameCore.prototype.update = function(delta) {
-    this.gameDelta = delta;
-}
-
-GameCore.prototype.display = function() {
-    this.ctx.clearRect(0, 0, this.canvas_width, this.canvas_height);
-
-    // draw a circle for each player
-    this.ctx.fillStyle = "#ffffff";
-    for (let user in this.players) {
-        this.ctx.beginPath();
-        this.ctx.arc(
-            this.players[user].x,
-            this.players[user].y,
-            25,
-            0,
-            2 * Math.PI
-        );
-        this.ctx.fill();
+GameCore.prototype.playerUpdate = function(id, delta) {
+    // TODO: pass in game area (640 x 640)
+    let p = this.players[id],
+        x = p.x,
+        y = p.y + p.y_velocity * delta / 1000;
+    if (y > 640) {
+        y = 640 - (y - 640);
+        p.y_velocity *= -1;
+    } else if (y < 0) {
+        y = 0 - y;
+        p.y_velocity *= -1;
     }
+    p.x = x;
+    p.y = y;
 }
 
-GameCore.prototype.server_add_player = function(id) {
-    let new_player = new Player(id, 100, 100);
-    this.players[id] = new_player; //  client_id: player_object
-    return new_player;
-}
-
-GameCore.prototype.move_player = function(player_id, x, y) { // player_id, move to x, move to y
+GameCore.prototype.move_player = function(id, x, y) {
+    // player_id, move to x, move to y
     // move a player to a new x, y
-    this.players[player_id].x = x;
-    this.players[player_id].y = y;
-}
+    let p = this.players[id];
+    p.x = x;
+    p.y = y;
+};
 
-// export GameCore() so it is callable from a require
-if (typeof global != "undefined") { // do this only on server-side
+if (typeof global != "undefined") {
     module.exports = GameCore;
 }
 
@@ -63,5 +60,6 @@ class Player {
         this.id = id;
         this.x = x;
         this.y = y;
+        this.y_velocity = 25;
     }
 }
