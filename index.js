@@ -17,7 +17,7 @@ http.listen(port, function(){
 
 /* socket.io server */
 var game_core = require('./core.js');
-let game_server = new game_core();
+let game_server = new game_core(640, 640);
 // TODO: for multiple games, have a dictionary instead
 // of a single instance.
 
@@ -32,6 +32,7 @@ io.on('connection', function(socket) {
     /* GAME JOIN BEGIN */
     console.log(">Player Create", socket.id);
     let player = game_server.playerCreate(socket.id);
+    game_server.playerAdd(player);
     player.timeUpdated = process.hrtime();
     socket.emit('game_join', {
         player: player,
@@ -46,14 +47,16 @@ io.on('connection', function(socket) {
         console.log(">Player Delete", socket.id);
     });
 
-    socket.on('player_moved', function(playerId, x, y) {
+    socket.on('player_moved', function(playerId, x, y, x_velocity, y_velocity) {
         // a client tells the server they moved their player
-        game_server.move_player(playerId, x, y);
+        game_server.playerUpdateAttributes(playerId, x, y, x_velocity, y_velocity);
         game_server.players[playerId].timeUpdated = process.hrtime();
-        socket.broadcast.emit('player_update_xy', {
+        socket.broadcast.emit('player_update_attributes', {
             playerId: playerId,
             x: x,
-            y: y
+            y: y, 
+            x_velocity: x_velocity,
+            y_velocity: y_velocity
         });
     });
 });
