@@ -3,38 +3,80 @@ var express = require('express'),
     app = express(),
     http = require('http').Server(app),
     io = require('socket.io')(http),
-    uuid = require('uuid'); // unique user id
+    port = 3000;
 
 /* express server */
-app.use('/', express.static(__dirname + '/')); // allows inlcude of files ex: in <script>
-
+app.use('/', express.static(__dirname + '/'));
 app.get('/', function(req, res){
-    res.sendFile(__dirname + '/index.html'); // send index.html to clients
+    res.sendFile(__dirname + '/view/index.html');
 });
 
-http.listen(3000, function(){
-    console.log('listening on *:3000'); // listen on port 3000
+http.listen(port, function(){
+    console.log('listening on port "' + port + '"');
 });
 
 /* socket.io server */
-var game_server = require('./game_server.js'); // GameCore object
+var game_core = require('./core.js');
+let game_server = new game_core(640, 640);
+// TODO: for multiple games, have a dictionary instead
+// of a single instance.
 
-io.on('connection', function(client) {
-    // new client connects to server
-    client.userid = uuid(); // generate an id
-    let new_player = game_server.server_add_player(client.userid); // server creates a new Player object
-    client.emit('user_connected', client.userid); // provide the client w/ its id
-    io.emit('update_player_list', game_server.players); // sends the updated player list to all clients
+io.on('connection', function(socket) {
+    // all communication starts here
 
-    client.on('disconnect', function() {
-        // client disconnects
-        console.log("user disconnected: " + client.userid);
-        // TODO: Remove from the array of players/sockets
+    /* Normally everything should be wrapped in a 
+     * 'socket.on(' but for our special case, we 
+     * do want everyone to join right away without
+     * an explicit call to game_join or whatnot.
+     */
+    /* GAME JOIN BEGIN */
+    console.log(">Player Create", socket.id);
+    let player = game_server.playerCreate(socket.id);
+    game_server.playerAdd(player);
+    player.timeUpdated = process.hrtime();
+    socket.emit('game_join', {
+        player: player,
+        players: game_server.players
+    });
+    socket.broadcast.emit('player_add', { player: player });
+    /* GAME JOIN END */
+
+    socket.on('disconnect', function() {
+        game_server.playerDelete(socket.id);
+        socket.broadcast.emit('player_delete', {playerId: socket.id});
+        console.log(">Player Delete", socket.id);
     });
 
-    client.on('player_moved', function(client_id, x, y) {
+    socket.on('player_moved', function(playerId, x, y, x_velocity, y_velocity) {
         // a client tells the server they moved their player
-        game_server.move_player(client_id, x, y);
-        io.emit('update_player_list', game_server.players); // TODO: This is incorrect and temporary. This needs to be done through periodic updates through the server's loop
+        game_server.playerUpdateAttributes(playerId, x, y, x_velocity, y_velocity);
+        game_server.players[playerId].timeUpdated = process.hrtime();
+        socket.broadcast.emit('player_update_attributes', {
+            playerId: playerId,
+            x: x,
+            y: y, 
+            x_velocity: x_velocity,
+            y_velocity: y_velocity
+        });
     });
 });
+
+let gameUpdateTime = process.hrtime();
+setInterval(function(){
+    gameUpdateTime = process.hrtime(gameUpdateTime);
+    let gameDelta = Math.round((gameUpdateTime[0]*1000) + (gameUpdateTime[1]/1000000));
+    gameUpdateTime = process.hrtime();
+
+    for (let playerId in game_server.players) {
+        let p = game_server.players[playerId];
+        if (p.timeUpdated){
+            let updateTime = process.hrtime(p.timeUpdated);
+            let addDelta = Math.round((updateTime[0]*1000) + (updateTime[1]/1000000));
+            game_server.playerUpdate(playerId, addDelta);
+        } else {
+            game_server.playerUpdate(playerId, gameDelta);
+        }
+        p.timeUpdated = process.hrtime();
+    }
+    io.emit('update_player_list', { players: game_server.players });
+}, 1000);
