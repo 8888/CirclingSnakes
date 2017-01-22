@@ -99,6 +99,15 @@ socket.on('update_player_list', function(data) {
     game.players = data.players;
 });
 
+function playersAdd(count) {
+    // add players without assigning a client
+    // test purposes only
+    for (let p = 0; p < count; p++) {
+        let id = Math.trunc(Math.random() * 10000);
+        socket.emit('playerAdd', id);
+    }
+}
+
 // Init, Update, Display, Loop
 function init() {
 

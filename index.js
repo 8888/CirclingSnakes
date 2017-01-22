@@ -30,16 +30,12 @@ io.on('connection', function(socket) {
      * an explicit call to game_join or whatnot.
      */
     /* GAME JOIN BEGIN */
-    console.log(">Player Create", socket.id);
-    let player = game_server.playerCreate(socket.id);
-    game_server.playerAdd(player);
-    player.timeUpdated = process.hrtime();
-    socket.emit('game_join', {
-        player: player,
-        players: game_server.players
-    });
-    socket.broadcast.emit('player_add', { player: player });
+    playerAdd(socket, socket.id, true);
     /* GAME JOIN END */
+
+    socket.on('playerAdd', function(id) {
+        playerAdd(socket, id);
+    });
 
     socket.on('disconnect', function() {
         game_server.playerDelete(socket.id);
@@ -61,11 +57,26 @@ io.on('connection', function(socket) {
     });
 });
 
+let playerAdd = function(socket, id, announce) {
+    let player = game_server.playerCreate(id);
+    game_server.playerAdd(player);
+    player.timeUpdated = process.hrtime();
+    if (announce) {
+        socket.emit('game_join', {
+            player: player,
+            players: game_server.players
+        });
+    }
+    socket.broadcast.emit('player_add', { player: player });
+    console.log(">Player Create", id);
+}
+
 let gameUpdateTime = process.hrtime();
 setInterval(function(){
     gameUpdateTime = process.hrtime(gameUpdateTime);
     let gameDelta = Math.round((gameUpdateTime[0]*1000) + (gameUpdateTime[1]/1000000));
     gameUpdateTime = process.hrtime();
+    console.log(gameDelta);
 
     for (let playerId in game_server.players) {
         let p = game_server.players[playerId];
@@ -79,4 +90,4 @@ setInterval(function(){
         p.timeUpdated = process.hrtime();
     }
     io.emit('update_player_list', { players: game_server.players });
-}, 1000);
+}, 20);
