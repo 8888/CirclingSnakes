@@ -34,41 +34,38 @@ io.on('connection', function(socket) {
     playerAdd(socket, socket.id, true);
     /* GAME JOIN END */
 
+    socket.on('disconnect', function() {
+        game_server.playerDelete(socket.id);
+        socket.broadcast.emit('playerDelete', {playerId: socket.id});
+        console.log(">Player Delete", socket.id);
+    });
+
     socket.on('playerAdd', function(id) {
         playerAdd(socket, id);
     });
 
-    socket.on('disconnect', function() {
-        game_server.playerDelete(socket.id);
-        socket.broadcast.emit('player_delete', {playerId: socket.id});
-        console.log(">Player Delete", socket.id);
-    });
-
-    socket.on('player_moved', function(playerId, x, y, x_velocity, y_velocity) {
-        // a client tells the server they moved their player
-        game_server.playerUpdateAttributes(playerId, x, y, x_velocity, y_velocity);
-        game_server.players[playerId].timeUpdated = process.hrtime();
-        socket.broadcast.emit('player_update_attributes', {
+    socket.on('playerTurn', function(playerId, direction) {
+        game_server.playerUpdateVelocity(playerId, 0, direction);
+        socket.broadcast.emit('playerTurn', {
             playerId: playerId,
-            x: x,
-            y: y, 
-            x_velocity: x_velocity,
-            y_velocity: y_velocity
+            direction: direction
         });
+        console.log(">Player turn and update", playerId);
     });
 });
 
 let playerAdd = function(socket, id, announce) {
     let player = game_server.playerCreate(id);
+    player.segmentAdd();
     game_server.playerAdd(player);
     player.timeUpdated = process.hrtime();
     if (announce) {
-        socket.emit('game_join', {
-            player: player,
-            players: game_server.players
+        socket.emit('gameJoin', {
+            playerId: player.id,
+            players: game_server.playersList()
         });
     }
-    socket.broadcast.emit('player_add', { player: player });
+    socket.broadcast.emit('playerAdd', { player: player });
     console.log(">Player Create", id);
 }
 
@@ -90,5 +87,9 @@ setInterval(function(){
         }
         p.timeUpdated = process.hrtime();
     }
-    io.emit('update_player_list', { players: game_server.players });
 }, 20);
+setInterval(function() {
+    io.emit('playersUpdate', { 
+        players: game_server.playersList()
+    });
+}, 1000);

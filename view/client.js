@@ -1,17 +1,17 @@
-/* client-side only code
- *  Attach user interface to server events
- *  Display server results
- */
+/* client-side: Attach user interface to server events */
 'use strict';
-let GameCore = require('../core.js');
+let GameCore = require('../core.js'),
+    Segment = require('../segment.js'),
+    Player = require('../player.js');
 let socket = io(),
     game = new GameCore(640, 640);
 // TODO: width/height should be passed back from server
 // after the client has joined a game.
 
 // Client Attributes
-let playerId = null,
-    isConnected = false;
+let playerId = null;
+let clientDisplay = null,
+    connectionDisplay = null;
 
 // View: Canvas / DOM
 let canvas = document.getElementById("canvasElement");
@@ -33,36 +33,22 @@ window.addEventListener("keydown", function(event) {
     }
 });
 
-canvas.addEventListener("mousedown", function(event) {
-    game.playerUpdateAttributes(playerId, mouseX, mouseY);
-    socket.emit('player_moved', playerId, mouseX, mouseY);
-});
-
-canvas.addEventListener("mousemove", function(event) {
-    mouseX = event.clientX - canvasBounds.left;
-    mouseY = event.clientY - canvasBounds.top;
-    /*
-    game.playerUpdateAttributes(player.id, mouseX, mouseY);
-    socket.emit('player_moved', player.id, mouseX, mouseY);
-    */
-});
-
 /* Server Events */
-socket.on('connect', function() {
-    console.log("Connected as", socket.id);
-    isConnected = true;
-});
+socket.on('connect', function() { connectionDisplay.innerText=""; });
+socket.on('connect_error', function(err) { connectionDisplay.innerText="Not Connected!"; });
+socket.on('gameJoin', function(data) {
+    /* { player: object, players: [object] }*/
+    playerId = data.playerId;
+    clientDisplay.innerText = playerId;
+    for(let i = 0; i < data.players.length; i++) {
+        game.playerAdd(playerFromData(data.players[i]));
+    }
 
-socket.on('connect_error', function(err) {
-    console.log('!!! Error connecting to server');
-    isConnected = false;
-});
+    function playerUpdateVelocity(id, direction) {
+        game.playerUpdateVelocity(id, 0, direction);
+        socket.emit('playerTurn', id, direction);
+    }
 
-socket.on('game_join', function(data) {
-    /* { player: object,
-     *   players: [object] }*/
-    playerId = data.player.id;
-    game.players = data.players;
     keyDownEvents = {
         37: function() { playerUpdateVelocity(playerId, game.left); },
         38: function() { playerUpdateVelocity(playerId, game.up); },
@@ -71,47 +57,51 @@ socket.on('game_join', function(data) {
     };
 });
 
-function playerUpdateVelocity(id, direction) {
-    game.playerUpdateVelocity(id, 0, direction);
-    let p = game.players[id];
-    socket.emit('player_moved', id, p.segments[0].x, p.segments[0].y, p.segments[0].x_velocity, p.segments[0].y_velocity);
+function playerFromData(playerData) {
+    let p = new Player(playerData.id);
+    for (let i = 0; i < playerData.segments.length; i++) {
+        let s = playerData.segments[i];
+        p.segmentAdd(s.x, s.y,
+            s.x_velocity, s.y_velocity,
+            s.waypoints,
+            s.size
+        );
+    }
+
+    return p;
 }
 
-socket.on('player_add', function(data) {
+socket.on('playerTurn', function(data) {
+    /* { playerId: int, direction: int } */
+    game.playerUpdateVelocity(data.playerId, 0, data.direction);
+});
+socket.on('playerAdd', function(data) {
     /* { player: object } */
-    game.playerAdd(data.player);
+    game.playerAdd(playerFromData(data.player));
 });
-
-socket.on('player_update_attributes', function(data) {
-    /* { playerId: string,
-     *   x: float,
-     *   y: float,
-     *   x_velocity: float,
-     *   y_velocity: float } */
-    game.playerUpdateAttributes(data.playerId, data.x, data.y, data.x_velocity, data.y_velocity);
-});
-
-socket.on('player_delete', function(data) {
+socket.on('playerDelete', function(data) {
     /* { playerId: string } */
     game.playerDelete(data.playerId);
 });
-
-socket.on('update_player_list', function(data) {
-    game.players = data.players;
+socket.on('playersUpdate', function(data) {
+    game.players = [];
+    for(let i = 0; i < data.players.length; i++) {
+        game.playerUpdateEntity(playerFromData(data.players[i]));
+    }
 });
 
+// Development features
 function playersAdd(count) {
-    // add players without assigning a client
-    // test purposes only
+    // add serverside players
     for (let p = 0; p < count; p++) {
-        let id = Math.trunc(Math.random() * 10000);
-        socket.emit('playerAdd', id);
+        socket.emit('playerAdd', Math.trunc(Math.random() * 10000));
     }
 }
 
 // Init, Update, Display, Loop
 function init() {
-
+    clientDisplay = document.getElementById('clientName');
+    connectionDisplay = document.getElementById('connectionStatus');
 }
 
 function update(delta) {
@@ -122,49 +112,23 @@ function update(delta) {
 
 function display() {
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-    /* HUD */
-    if (playerId) {
-        ctx.font = "30px New Courier";
-        let playerName = ctx.measureText(playerId);
-        ctx.fillStyle = "rgba(130, 65, 160, 0.8)";
-        ctx.fillText(playerId, (canvasWidth - playerName.width) / 2, 45);
-        if (!isConnected) {
-            ctx.font = "18px New Courier";
-            ctx.fillStyle = "black";
-            let text = ">>Not connected!",
-                mText = ctx.measureText(text);
-            ctx.beginPath();
-            ctx.rect(0, 0, mText.width, 24);
-            ctx.fill();
-            ctx.fillStyle = "rgba(250, 65, 65, 0.8)";
-            ctx.fillText(text, 0, 20);
-        }
-    }
-
-    /* PLAYERS */
     ctx.font = "18px New Courier";
     for (let user in game.players) {
         let p = game.players[user];
-        for (let segment = 0; segment < p.segments.length; segment++) {
-            if (Math.trunc(p.segments[segment].y) == 320) {
+        for (let i = 0; i < p.segments.length; i++) {
+            let s = p.segments[i];
+            if (Math.trunc(s.y) == 320) {
                 ctx.fillStyle = "rgba(250, 10, 10, 0.9)";
             } else if(p.id == playerId) {
                 ctx.fillStyle = "rgba(130, 65, 160, 0.8)";
             } else {
                 ctx.fillStyle = "rgba(250, 250, 250, 0.65)";
             }
-            ctx.fillRect(
-                p.segments[segment].x,
-                p.segments[segment].y, 
-                p.segments[segment].size, 
-                p.segments[segment].size
-            );
+            ctx.fillRect(s.x, s.y, s.size, s.size);
             ctx.fillStyle = "rgba(10, 10, 10, 0.8)";
             ctx.fillText(
-                (segment ? segment : p.id.slice(0,6)) + "(" + Math.trunc(p.segments[segment].x) + ", " + Math.trunc(p.segments[segment].y) + ")", 
-                p.segments[segment].x, 
-                p.segments[segment].y
+                (i ? i : p.id.slice(0,6)) + "(" + Math.trunc(s.x) + ", " + Math.trunc(s.y) + ")", 
+                s.x, s.y
             );
         }   
     }
