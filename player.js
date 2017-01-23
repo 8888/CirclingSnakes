@@ -1,23 +1,27 @@
 'use strict';
 
+let Segment = require('./segment.js');
 /* Player class */
 class Player {
     constructor(id, x, y) {
         this.id = id;
-        this.segments = [new Segment(x, y), new Segment(x, y-20)];
+        this.segments = [];
+        if (Number.isFinite(x) && Number.isFinite(y)) {
+            this.segmentAdd(x, y);
+        }
     }
-}
 
-class Segment {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-        this.x_velocity = 0;
-        this.y_velocity = 25;
-        this.velocity_change_x = null;
-        this.velocity_change_y = null;
-        this.velocity_change_direction = null;
-        this.size = 20; // length and width
+    segmentAdd(x, y, x_velocity, y_velocity, waypoints, size) {
+        if (Number.isFinite(x) && Number.isFinite(y)) {
+            this.segments.push(new Segment(x, y, x_velocity, y_velocity, waypoints, size));
+        } else {
+            let s = this.segments[this.segments.length - 1];
+            this.segments.push(new Segment(
+                s.x + -1 * Math.sign(s.x_velocity) * s.size,
+                s.y + -1 * Math.sign(s.y_velocity) * s.size,
+                s.x_velocity, s.y_velocity, [], s.size
+            ));
+        }
     }
 }
 

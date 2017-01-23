@@ -2,6 +2,7 @@
  * This contains all of the game logic shared by the client and server.
 */
 'use strict';
+let Segment = require('./segment.js');
 var Player = require('./player.js');
 
 /* GameCore class */
@@ -27,77 +28,79 @@ GameCore.prototype.playerCreate = function(id) {
 };
 
 GameCore.prototype.playerAdd = function(player) {
-    console.log("core.playerAdd", player.id);
     this.players[player.id] = player;
 };
 
 GameCore.prototype.playerDelete = function(id) {
-    console.log("core.playerDelete", id);
     delete this.players[id];
+};
+
+GameCore.prototype.playerUpdateEntity = function(player) {
+    this.players[player.id] = player;
 };
 
 GameCore.prototype.playerUpdate = function(id, delta) {
     // TODO: pass in game area (640 x 640)
     let p = this.players[id];
-    for (let segment = 0; segment < p.segments.length; segment++) {
-        let x = p.segments[segment].x + p.segments[segment].x_velocity * delta / 1000,
-            y = p.segments[segment].y + p.segments[segment].y_velocity * delta / 1000;
+    for (let i = 0, length = p.segments.length; i < length; i++) {
+        let s = p.segments[i];
+        let x = s.x + s.x_velocity * delta / 1000,
+            y = s.y + s.y_velocity * delta / 1000;
 
         if (y > this.height) {
             y = this.height - (y - this.height);
-            p.segments[segment].y_velocity *= -1;
+            s.y_velocity *= -1;
         } else if (y < 0) {
             y = 0 - y;
-            p.segments[segment].y_velocity *= -1;
+            s.y_velocity *= -1;
         }
 
         if (x > this.width) {
             x = this.width - (x - this.width);
-            p.segments[segment].x_velocity *= -1;
+            s.x_velocity *= -1;
         } else if (x < 0) {
             x = 0 - x;
-            p.segments[segment].x_velocity *= -1;
+            s.x_velocity *= -1;
         }
 
-        p.segments[segment].x = x;
-        p.segments[segment].y = y;
-
-        if (p.segments[segment].velocity_change_direction) { // if there is a turn to be made
-            if (p.segments[segment].velocity_change_direction == this.left) { // turning left
-                if (p.segments[segment].y_velocity > 0 && p.segments[segment].y >= p.segments[segment].velocity_change_y) { // moving up
-                    this.playerUpdateVelocity(id, segment, p.velocity_change_direction);
-                    p.segments[segment].velocity_change_direction = null;
-                } else if (p.segments[segment].y_velocity < 0 && p.segments[segment].y <= p.segments[segment].velocity_change_y) { // moving down
-                    this.playerUpdateVelocity(id, segment, p.velocity_change_direction);
-                    p.segments[segment].velocity_change_direction = null;
-                } else if (p.segments[segment].x_velocity > 0 && p.segments[segment].X >= p.segments[segment].velocity_change_x) { // moving right
-                    this.playerUpdateVelocity(id, segment, p.velocity_change_direction);
-                    p.segments[segment].velocity_change_direction = null;
-                }
-            }           
+        s.x = x;
+        s.y = y;
+        if (s.waypoints.length) {
+            let w = s.waypoints[0];
+            if (    (
+                        (w.direction == this.left || w.direction == this.right) &&
+                        ((s.y_velocity > 0 && s.y >= w.y) || (s.y_velocity < 0 && s.y <= w.y))
+                    ) || 
+                    (
+                        (w.direction == this.up || w.direction == this.down) &&
+                        ((s.x_velocity > 0 && s.x >= w.x) || (s.x_velocity < 0 && s.x <= w.x))
+                    )
+                ) {
+                this.playerUpdateVelocity(id, i, w.direction);
+                s.waypoints.shift();
+            }
         }
     }
 };
 
 GameCore.prototype.playerUpdateVelocity = function(id, segment, turn) {
-    let p = this.players[id];
+    let s = this.players[id].segments[segment];
     if (turn == this.left) {
-        p.segments[segment].x_velocity = -25;
-        p.segments[segment].y_velocity = 0;
+        s.x_velocity = -25;
+        s.y_velocity = 0;
     } else if (turn == this.up) {
-        p.segments[segment].x_velocity = 0;
-        p.segments[segment].y_velocity = -25;
+        s.x_velocity = 0;
+        s.y_velocity = -25;
     } else if (turn == this.right) {
-        p.segments[segment].x_velocity = 25;
-        p.segments[segment].y_velocity = 0;
+        s.x_velocity = 25;
+        s.y_velocity = 0;
     } else if (turn == this.down) {
-        p.segments[segment].x_velocity = 0;
-        p.segments[segment].y_velocity = 25;
+        s.x_velocity = 0;
+        s.y_velocity = 25;
     }
-    if (p.segments.length > segment + 1) { // length is greater than index
-        p.segments[segment + 1].velocity_change_x = p.segments[segment].x;
-        p.segments[segment + 1].velocity_change_y = p.segments[segment].y;
-        p.segments[segment + 1].velocity_change_direction = turn;
+    if (this.players[id].segments.length > segment + 1) {
+        let sNext = this.players[id].segments[segment + 1];
+        sNext.waypointAdd(s.x, s.y, turn);
     }
 };
 
@@ -113,6 +116,13 @@ GameCore.prototype.playerUpdateAttributes = function(id, x, y, x_velocity, y_vel
     if (y_velocity !== undefined) {
         p.segments[0].y_velocity = y_velocity;
     }
+};
+
+GameCore.prototype.playersList = function() {
+    let players = this.players;
+    return Object["values"] ?
+        Object.values(players) :
+        Object.keys(players).map(function(key){ return players[key]; });
 };
 
 if (typeof global != "undefined") {
