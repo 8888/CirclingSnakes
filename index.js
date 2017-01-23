@@ -16,6 +16,7 @@ http.listen(port, function(){
 });
 
 /* socket.io server */
+//var Player = require('./player.js');
 var game_core = require('./core.js');
 let game_server = new game_core(640, 640);
 // TODO: for multiple games, have a dictionary instead
@@ -76,7 +77,7 @@ setInterval(function(){
     gameUpdateTime = process.hrtime(gameUpdateTime);
     let gameDelta = Math.round((gameUpdateTime[0]*1000) + (gameUpdateTime[1]/1000000));
     gameUpdateTime = process.hrtime();
-    console.log(gameDelta);
+    //console.log(gameDelta);
 
     for (let playerId in game_server.players) {
         let p = game_server.players[playerId];

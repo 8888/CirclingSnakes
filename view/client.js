@@ -3,6 +3,7 @@
  *  Display server results
  */
 'use strict';
+let GameCore = require('../core.js');
 let socket = io(),
     game = new GameCore(640, 640);
 // TODO: width/height should be passed back from server
@@ -71,9 +72,9 @@ socket.on('game_join', function(data) {
 });
 
 function playerUpdateVelocity(id, direction) {
-    game.playerUpdateVelocity(id, direction);
+    game.playerUpdateVelocity(id, 0, direction);
     let p = game.players[id];
-    socket.emit('player_moved', id, p.x, p.y, p.x_velocity, p.y_velocity);
+    socket.emit('player_moved', id, p.segments[0].x, p.segments[0].y, p.segments[0].x_velocity, p.segments[0].y_velocity);
 }
 
 socket.on('player_add', function(data) {
@@ -145,19 +146,27 @@ function display() {
     ctx.font = "18px New Courier";
     for (let user in game.players) {
         let p = game.players[user];
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 25, 0, 2 * Math.PI);
-        if (Math.trunc(p.y) == 320) {
-            ctx.fillStyle = "rgba(250, 10, 10, 0.9)";
-        } else if(p.id == playerId) {
-            ctx.fillStyle = "rgba(130, 65, 160, 0.8)";
-        } else {
-            ctx.fillStyle = "rgba(250, 250, 250, 0.65)";
-        }
-        ctx.fill();
-        ctx.fillStyle = "rgba(10, 10, 10, 0.8)";
-        ctx.fillText(p.id, p.x, p.y);
-        ctx.fillText("(" + Math.trunc(p.x) + ", " + Math.trunc(p.y) + ")", p.x, p.y + 20);
+        for (let segment = 0; segment < p.segments.length; segment++) {
+            if (Math.trunc(p.segments[segment].y) == 320) {
+                ctx.fillStyle = "rgba(250, 10, 10, 0.9)";
+            } else if(p.id == playerId) {
+                ctx.fillStyle = "rgba(130, 65, 160, 0.8)";
+            } else {
+                ctx.fillStyle = "rgba(250, 250, 250, 0.65)";
+            }
+            ctx.fillRect(
+                p.segments[segment].x,
+                p.segments[segment].y, 
+                p.segments[segment].size, 
+                p.segments[segment].size
+            );
+            ctx.fillStyle = "rgba(10, 10, 10, 0.8)";
+            ctx.fillText(
+                (segment ? segment : p.id.slice(0,6)) + "(" + Math.trunc(p.segments[segment].x) + ", " + Math.trunc(p.segments[segment].y) + ")", 
+                p.segments[segment].x, 
+                p.segments[segment].y
+            );
+        }   
     }
 
     ctx.strokeStyle = "black";
