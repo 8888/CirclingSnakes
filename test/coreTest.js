@@ -2,7 +2,7 @@
 let chai = require('chai'),
     expect = chai.expect;
 
-let c = require('../core.js');
+let c = require('../model/core.js');
 
 let intgerRange = [];
 describe('GameCore.constructor', function() {

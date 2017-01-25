@@ -3,12 +3,13 @@ var express = require('express'),
     app = express(),
     http = require('http').Server(app),
     io = require('socket.io')(http),
+    path = require('path'),
     port = 3000;
 
 /* express server */
-app.use('/', express.static(__dirname + '/'));
+app.use('/', express.static(path.join(__dirname, '../')));
 app.get('/', function(req, res){
-    res.sendFile(__dirname + '/view/index.html');
+    res.sendFile(path.join(__dirname, '../view', 'index.html'));
 });
 
 http.listen(port, function(){
@@ -16,8 +17,7 @@ http.listen(port, function(){
 });
 
 /* socket.io server */
-//var Player = require('./player.js');
-var game_core = require('./core.js');
+var game_core = require('../model/core.js');
 let game_server = new game_core(640, 640);
 // TODO: for multiple games, have a dictionary instead
 // of a single instance.

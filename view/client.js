@@ -1,8 +1,8 @@
 /* client-side: Attach user interface to server events */
 'use strict';
-let GameCore = require('../core.js'),
-    Segment = require('../segment.js'),
-    Player = require('../player.js');
+let GameCore = require('../model/core.js'),
+    Segment = require('../model/segment.js'),
+    Player = require('../model/player.js');
 let socket = io(),
     game = new GameCore(640, 640);
 // TODO: width/height should be passed back from server

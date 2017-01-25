@@ -2,8 +2,9 @@
  * This contains all of the game logic shared by the client and server.
 */
 'use strict';
-let Segment = require('./segment.js');
-var Player = require('./player.js');
+let Utility = require('./utility.js'),
+    Segment = require('./segment.js'),
+    Player = require('./player.js');
 
 /* GameCore class */
 var GameCore = function(width, height) {
@@ -17,10 +18,6 @@ var GameCore = function(width, height) {
     }
     this.width = width;
     this.height = height;
-    this.left = 0b1;
-    this.up = 0b10;
-    this.right = 0b100;
-    this.down = 0b1000; 
 };
 
 GameCore.prototype.playerCreate = function(id) {
@@ -68,11 +65,11 @@ GameCore.prototype.playerUpdate = function(id, delta) {
         if (s.waypoints.length) {
             let w = s.waypoints[0];
             if (    (
-                        (w.direction == this.left || w.direction == this.right) &&
+                        (w.direction == Utility.DIRECTION_WEST || w.direction == Utility.DIRECTION_EAST) &&
                         ((s.y_velocity > 0 && s.y >= w.y) || (s.y_velocity < 0 && s.y <= w.y))
                     ) || 
                     (
-                        (w.direction == this.up || w.direction == this.down) &&
+                        (w.direction == Utility.DIRECTION_NORTH || w.direction == Utility.DIRECTION_SOUTH) &&
                         ((s.x_velocity > 0 && s.x >= w.x) || (s.x_velocity < 0 && s.x <= w.x))
                     )
                 ) {
@@ -85,16 +82,16 @@ GameCore.prototype.playerUpdate = function(id, delta) {
 
 GameCore.prototype.playerUpdateVelocity = function(id, segment, turn) {
     let s = this.players[id].segments[segment];
-    if (turn == this.left) {
+    if (turn == Utility.DIRECTION_WEST) {
         s.x_velocity = -25;
         s.y_velocity = 0;
-    } else if (turn == this.up) {
+    } else if (turn == Utility.DIRECTION_NORTH) {
         s.x_velocity = 0;
         s.y_velocity = -25;
-    } else if (turn == this.right) {
+    } else if (turn == Utility.DIRECTION_EAST) {
         s.x_velocity = 25;
         s.y_velocity = 0;
-    } else if (turn == this.down) {
+    } else if (turn == Utility.DIRECTION_SOUTH) {
         s.x_velocity = 0;
         s.y_velocity = 25;
     }
@@ -125,6 +122,4 @@ GameCore.prototype.playersList = function() {
         Object.keys(players).map(function(key){ return players[key]; });
 };
 
-if (typeof global != "undefined") {
-    module.exports = GameCore;
-}
+module.exports = GameCore;

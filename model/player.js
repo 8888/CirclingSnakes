@@ -1,7 +1,6 @@
 'use strict';
-
 let Segment = require('./segment.js');
-/* Player class */
+
 class Player {
     constructor(id, x, y) {
         this.id = id;
@@ -25,6 +24,4 @@ class Player {
     }
 }
 
-if (typeof global != "undefined") {
-    module.exports = Player;
-}
+module.exports = Player;

@@ -19,6 +19,4 @@ class Segment {
     }
 }
 
-if (typeof global !== 'undefined') {
-    module.exports = Segment;
-}
+module.exports = Segment;

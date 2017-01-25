@@ -5,7 +5,8 @@ This is a work in progress using Express (webserver) and Socket.IO (real-time co
 
 ## How to build
 1. `npm install`
-2. `node index`
+2. `browserify view/client.js -o view/bundle.js`
+2. `node server/index`
 3. Connect on localhost:3000 (default port)
 
 
