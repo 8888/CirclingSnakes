@@ -2,11 +2,11 @@
 'use strict';
 let GameCore = require('../model/core.js'),
     Segment = require('../model/segment.js'),
-    Player = require('../model/player.js');
+    Player = require('../model/player.js'),
+    Utility = require('../model/utility.js');
 let socket = io(),
     game = new GameCore(640, 640);
 // TODO: width/height should be passed back from server
-// after the client has joined a game.
 
 // Client Attributes
 let playerId = null;
@@ -50,10 +50,10 @@ socket.on('gameJoin', function(data) {
     }
 
     keyDownEvents = {
-        37: function() { playerUpdateVelocity(playerId, game.left); },
-        38: function() { playerUpdateVelocity(playerId, game.up); },
-        39: function() { playerUpdateVelocity(playerId, game.right); },
-        40: function() { playerUpdateVelocity(playerId, game.down); }
+        37: function() { playerUpdateVelocity(playerId, Utility.DIRECTION_WEST); },
+        38: function() { playerUpdateVelocity(playerId, Utility.DIRECTION_NORTH); },
+        39: function() { playerUpdateVelocity(playerId, Utility.DIRECTION_EAST); },
+        40: function() { playerUpdateVelocity(playerId, Utility.DIRECTION_SOUTH); }
     };
 });
 
@@ -62,7 +62,7 @@ function playerFromData(playerData) {
     for (let i = 0; i < playerData.segments.length; i++) {
         let s = playerData.segments[i];
         p.segmentAdd(s.x, s.y,
-            s.x_velocity, s.y_velocity,
+            s.direction,
             s.waypoints,
             s.size
         );

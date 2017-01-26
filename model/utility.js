@@ -5,12 +5,25 @@ let Utility = {
     DIRECTION_NORTH: 0b10,
     DIRECTION_EAST: 0b100,
     DIRECTION_SOUTH: 0b1000,
-    directionReverse: {
-        0b1 : 0b100,
-        0b100 : 0b1,
-        0b10 : 0b1000,
-        0b1000 : 0b10
-    }
+    directionReverse: {},
+    directionVelocity: {},
+    directions: [],
+    directionsEW: [],
+    directionsNS: []
 };
 
-module.export = Utility;
+Utility.directionReverse[Utility.DIRECTION_NORTH] = Utility.DIRECTION_SOUTH;
+Utility.directionReverse[Utility.DIRECTION_SOUTH] = Utility.DIRECTION_NORTH;
+Utility.directionReverse[Utility.DIRECTION_EAST] = Utility.DIRECTION_WEST;
+Utility.directionReverse[Utility.DIRECTION_WEST] = Utility.DIRECTION_EAST;
+
+Utility.directionVelocity[Utility.DIRECTION_NORTH] = [0, -25];
+Utility.directionVelocity[Utility.DIRECTION_SOUTH] = [0, 25];
+Utility.directionVelocity[Utility.DIRECTION_EAST] = [25, 0];
+Utility.directionVelocity[Utility.DIRECTION_WEST] = [-25, 0];
+
+Utility.directions = [Utility.DIRECTION_EAST, Utility.DIRECTION_WEST, Utility.DIRECTION_NORTH, Utility.DIRECTION_SOUTH];
+Utility.directionsEW = [Utility.DIRECTION_EAST, Utility.DIRECTION_WEST];
+Utility.directionsNS = [Utility.DIRECTION_NORTH, Utility.DIRECTION_SOUTH];
+
+module.exports = Utility;

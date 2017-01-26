@@ -15,3 +15,9 @@ This is a work in progress using Express (webserver) and Socket.IO (real-time co
 2. `mocha`
 
 Mocha is the runner and reporter of tests that are defined by Chai.
+
+
+## Viewing code coverage reports
+1. You built the code with the above `npm install`
+2. `istanbul cover node_modules/mocha/bin/_mocha -- -R spec`
+3. Report will be generated at /coverage/lcov-report/index.html

@@ -9,7 +9,6 @@ let u = require('../model/utility.js'),
 describe('Player.constructor', function() {
     let player = null,
         playerId = "adsf";
-
     beforeEach(function() {
         player = new p(playerId);
     });
@@ -26,7 +25,7 @@ describe('Player.constructor', function() {
             .empty;
     });
     it('has first segments', function() {
-        expect( new p(playerId, 1, 1))
+        expect(new p(playerId, 1, 1))
             .property('segments')
             .a('array')
             .lengthOf(1);
@@ -35,14 +34,31 @@ describe('Player.constructor', function() {
 
 describe('Player.segmentAdd', function() {
     let player = null;
-
     beforeEach(function() {
         player = new p("asdf");
     });
 
+    it('valid x, y when provided', function() {
+        expect(function() { player.segmentAdd(null, 7); })
+            .throw(Error, 'Valid X, Y required together');
+        expect(function() { player.segmentAdd(undefined, 7); })
+            .throw(Error, 'Valid X, Y required together');
+        expect(function() { player.segmentAdd("seven", 7); })
+            .throw(Error, 'Valid X, Y required together');
+        expect(function() { player.segmentAdd(Infinity, 7); })
+            .throw(Error, 'Valid X, Y required together');
+        expect(function() { player.segmentAdd(7, null); })
+            .throw(Error, 'Valid X, Y required together');
+        expect(function() { player.segmentAdd(7, undefined); })
+            .throw(Error, 'Valid X, Y required together');
+        expect(function() { player.segmentAdd(7, "seven"); })
+            .throw(Error, 'Valid X, Y required together');
+        expect(function() { player.segmentAdd(7, Infinity); })
+            .throw(Error, 'Valid X, Y required together');
+    });
     it('disallow first add without x, y', function() {
-        expect(player.segmentAdd())
-            .throw(Error);
+        expect(function() { player.segmentAdd(); })
+            .throw(Error, 'First segment must provide x and y');
     });
     it('increase segment count', function() {
         player.segmentAdd(1, 1);
@@ -54,8 +70,7 @@ describe('Player.segmentAdd', function() {
     it('direction is same or perpendicular to previous', function () {
         player.segmentAdd(1, 1);
         let s0 = player.segments[0];
-        let directions = [u.left, u.up, u.right, u.down];
-        for(let d in directions) {
+        for(let d in u.directions) {
             let s0 = player.segments[player.segments.length - 1];
             player.segmentAdd(1, 1, d);
             let s1 = player.segments[player.segments.length - 1];
@@ -64,6 +79,13 @@ describe('Player.segmentAdd', function() {
             expect(s1.direction == s0.direction ||
                 s1.direction != u.directionReverse[s0.direction]
             );
+        }
+    });
+    it('disallow reverse to previous', function() {
+        for(let d in u.directions) {
+            player.segmentAdd(1, 1, d);
+            expect(function() { player.segmentAdd(1, 1, u.directionReverse[d]); })
+                .throw(Error, 'Direction must not be reverse previous segment');
         }
     });
     it('adds to last segment w same direction', function() {
