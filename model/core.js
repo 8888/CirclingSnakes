@@ -4,7 +4,8 @@
 'use strict';
 let Utility = require('./utility.js'),
     Segment = require('./segment.js'),
-    Player = require('./player.js');
+    Player = require('./player.js'),
+    Fruit = require('./fruit.js');
 
 /* GameCore class */
 var GameCore = function(width, height) {
@@ -18,6 +19,10 @@ var GameCore = function(width, height) {
     }
     this.width = width;
     this.height = height;
+    // Fruit spawning
+    this.fruit = {};
+    this.fruitMax = 5; // TODO: 5 is arbitrary
+    this.fruitSpawnInterval = 2000; // milliseconds
 };
 
 GameCore.prototype.playerCreate = function(id) {
@@ -99,6 +104,17 @@ GameCore.prototype.playerUpdateAttributes = function(id, x, y, direction) {
     if (direction !== undefined) {
         p.segments[0].direction = direction;
     }
+};
+
+GameCore.prototype.fruitCreate = function(id) {
+    // create a new Fruit object
+    return new Fruit(id, Math.trunc(Math.random() * this.width), Math.trunc(Math.random() * this.height));
+    //TODO: Location not occupied by other fruit or by the snake
+};
+
+GameCore.prototype.fruitAdd = function(fruit) {
+    // add the Fruit to the list of in-play fruit
+    this.fruit[fruit.id] = fruit;
 };
 
 GameCore.prototype.playersList = function() {
