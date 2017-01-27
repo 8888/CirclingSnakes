@@ -13,8 +13,21 @@ describe('Player.constructor', function() {
         player = new p(playerId);
     });
 
-    it('has id', function() {
-        expect(player)
+    it('require valid id', function() {
+        expect(function() { new p(); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+        expect(function() { new p(null); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+        expect(function() { new p(undefined); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+        expect(function() { new p([]); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+        expect(function() { new p(''); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+        expect(function() { new p(3982); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+        expect(new p(playerId))
+            .instanceof(p)
             .property('id')
             .equals(playerId);
     });
@@ -22,7 +35,7 @@ describe('Player.constructor', function() {
         expect(player)
             .property('segments')
             .a('array')
-            .empty;
+            .length(0);
     });
     it('has first segments', function() {
         expect(new p(playerId, 1, 1))
@@ -82,11 +95,13 @@ describe('Player.segmentAdd', function() {
         }
     });
     it('disallow reverse to previous', function() {
+        /* jslint loopfunc: true */
         for(let d in u.directions) {
             player.segmentAdd(1, 1, d);
             expect(function() { player.segmentAdd(1, 1, u.directionReverse[d]); })
                 .throw(Error, 'Direction must not be reverse previous segment');
         }
+        /* jslint loopfunc: false */
     });
     it('adds to last segment w same direction', function() {
         player.segmentAdd(1, 1);

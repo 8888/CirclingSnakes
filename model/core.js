@@ -20,24 +20,44 @@ var GameCore = function(width, height) {
     this.width = width;
     this.height = height;
     // Fruit spawning
-    this.fruit = {};
+    this.fruits = {};
     this.fruitMax = 5; // TODO: 5 is arbitrary
     this.fruitSpawnInterval = 2000; // milliseconds
 };
 
 GameCore.prototype.playerCreate = function(id) {
+    if (typeof id !== "string" || id.length === 0) {
+        throw new Error('Parameter \'id\' required of type string');
+    }
     return new Player(id, Math.trunc(Math.random() * this.width), Math.trunc(Math.random() * this.height));
 };
 
 GameCore.prototype.playerAdd = function(player) {
+    if (!(player instanceof Player)) {
+        throw new Error('Parameter \'player\' required of type Player');
+    } else if (this.players[player.id]) {
+        throw new Error('Duplicate player id cannot be added');
+    }
+
     this.players[player.id] = player;
 };
 
 GameCore.prototype.playerDelete = function(id) {
+    if (typeof id !== "string" || id.length === 0) {
+        throw new Error('Parameter \'id\' required of type string');
+    } else if (!this.players[id]) {
+        throw new Error('Player does not exist to delete');
+    }
+
     delete this.players[id];
 };
 
 GameCore.prototype.playerUpdateEntity = function(player) {
+    if (!(player instanceof Player)) {
+        throw new Error('Parameter \'player\' required of type Player');
+    } else if (!this.players[player.id]) {
+        throw new Error('Player does not exist to update');
+    }
     this.players[player.id] = player;
 };
 
@@ -108,7 +128,7 @@ GameCore.prototype.playerUpdateAttributes = function(id, x, y, direction) {
 
 GameCore.prototype.playersList = function() {
     let players = this.players;
-    return Object["values"] ?
+    return Object.values ?
         Object.values(players) :
         Object.keys(players).map(function(key){ return players[key]; });
 };
@@ -121,18 +141,20 @@ GameCore.prototype.fruitCreate = function(id) {
 
 GameCore.prototype.fruitAdd = function(fruit) {
     // add the Fruit to the list of in-play fruit
-    this.fruit[fruit.id] = fruit;
+    this.fruits[fruit.id] = fruit;
 };
 
+GameCore.prototype.fruitDelete = function() {};
+
 GameCore.prototype.fruitUpdateEntity = function(fruit) {
-    this.fruit[fruit.id] = fruit;
+    this.fruits[fruit.id] = fruit;
 };
 
 GameCore.prototype.fruitList = function() {
-    let fruit = this.fruit;
-    return Object["values"] ?
-        Object.values(fruit) :
-        Object.keys(fruit).map(function(key){ return fruit[key]; });
+    let fruits = this.fruits;
+    return Object.values ?
+        Object.values(fruits) :
+        Object.keys(fruits).map(function(key){ return fruits[key]; });
 };
 
 module.exports = GameCore;

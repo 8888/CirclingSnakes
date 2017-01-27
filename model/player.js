@@ -4,6 +4,9 @@ let Segment = require('./segment.js'),
 
 class Player {
     constructor(id, x, y) {
+        if (typeof id !== "string" || id.length === 0) {
+            throw new Error('Parameter \'id\' required of type string');
+        }
         this.id = id;
         this.segments = [];
         if (Number.isFinite(x) && Number.isFinite(y)) {
