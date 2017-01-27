@@ -1,11 +1,12 @@
 'use strict';
 
+let Utility = require('./utility.js');
+
 class Segment {
-    constructor(x, y, x_velocity, y_velocity, waypoints, size) {
+    constructor(x, y, direction, waypoints, size) {
         this.x = x;
         this.y = y;
-        this.x_velocity = typeof x_velocity !== 'undefined' ? x_velocity : 0;
-        this.y_velocity = typeof y_velocity !== 'undefined' ? y_velocity : 25;
+        this.direction = typeof direction !== 'undefined' ? direction : Utility.DIRECTION_EAST;
         this.waypoints = typeof waypoints !== 'undefined' ? waypoints : [];
         this.size = typeof size !== 'undefined' ? size : 20;
     }
@@ -19,6 +20,4 @@ class Segment {
     }
 }
 
-if (typeof global !== 'undefined') {
-    module.exports = Segment;
-}
+module.exports = Segment;

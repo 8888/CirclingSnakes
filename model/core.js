@@ -2,8 +2,9 @@
  * This contains all of the game logic shared by the client and server.
 */
 'use strict';
-let Segment = require('./segment.js');
-var Player = require('./player.js');
+let Utility = require('./utility.js'),
+    Segment = require('./segment.js'),
+    Player = require('./player.js');
 
 /* GameCore class */
 var GameCore = function(width, height) {
@@ -17,10 +18,6 @@ var GameCore = function(width, height) {
     }
     this.width = width;
     this.height = height;
-    this.left = 0b1;
-    this.up = 0b10;
-    this.right = 0b100;
-    this.down = 0b1000; 
 };
 
 GameCore.prototype.playerCreate = function(id) {
@@ -44,23 +41,24 @@ GameCore.prototype.playerUpdate = function(id, delta) {
     let p = this.players[id];
     for (let i = 0, length = p.segments.length; i < length; i++) {
         let s = p.segments[i];
-        let x = s.x + s.x_velocity * delta / 1000,
-            y = s.y + s.y_velocity * delta / 1000;
+        let v = Utility.directionVelocity[s.direction];
+        let x = s.x + v[0] * delta / 1000,
+            y = s.y + v[1] * delta / 1000;
 
         if (y > this.height) {
             y = this.height - (y - this.height);
-            s.y_velocity *= -1;
+            s.direction = Utility.directionReverse[s.direction];
         } else if (y < 0) {
             y = 0 - y;
-            s.y_velocity *= -1;
+            s.direction = Utility.directionReverse[s.direction];
         }
 
         if (x > this.width) {
             x = this.width - (x - this.width);
-            s.x_velocity *= -1;
+            s.direction = Utility.directionReverse[s.direction];
         } else if (x < 0) {
             x = 0 - x;
-            s.x_velocity *= -1;
+            s.direction = Utility.directionReverse[s.direction];
         }
 
         s.x = x;
@@ -68,12 +66,12 @@ GameCore.prototype.playerUpdate = function(id, delta) {
         if (s.waypoints.length) {
             let w = s.waypoints[0];
             if (    (
-                        (w.direction == this.left || w.direction == this.right) &&
-                        ((s.y_velocity > 0 && s.y >= w.y) || (s.y_velocity < 0 && s.y <= w.y))
+                        Utility.directionsEW.indexOf(w.direction) > -1 &&
+                        ((v[1] > 0 && s.y >= w.y) || (v[1] < 0 && s.y <= w.y))
                     ) || 
                     (
-                        (w.direction == this.up || w.direction == this.down) &&
-                        ((s.x_velocity > 0 && s.x >= w.x) || (s.x_velocity < 0 && s.x <= w.x))
+                        Utility.directionsNS.indexOf(w.direction) > -1 &&
+                        ((v[0] > 0 && s.x >= w.x) || (v[0] < 0 && s.x <= w.x))
                     )
                 ) {
                 this.playerUpdateVelocity(id, i, w.direction);
@@ -85,36 +83,21 @@ GameCore.prototype.playerUpdate = function(id, delta) {
 
 GameCore.prototype.playerUpdateVelocity = function(id, segment, turn) {
     let s = this.players[id].segments[segment];
-    if (turn == this.left) {
-        s.x_velocity = -25;
-        s.y_velocity = 0;
-    } else if (turn == this.up) {
-        s.x_velocity = 0;
-        s.y_velocity = -25;
-    } else if (turn == this.right) {
-        s.x_velocity = 25;
-        s.y_velocity = 0;
-    } else if (turn == this.down) {
-        s.x_velocity = 0;
-        s.y_velocity = 25;
-    }
+    s.direction = turn;
     if (this.players[id].segments.length > segment + 1) {
         let sNext = this.players[id].segments[segment + 1];
         sNext.waypointAdd(s.x, s.y, turn);
     }
 };
 
-GameCore.prototype.playerUpdateAttributes = function(id, x, y, x_velocity, y_velocity) {
+GameCore.prototype.playerUpdateAttributes = function(id, x, y, direction) {
     // player_id, move to x, move to y
     // move a player to a new x, y
     let p = this.players[id];
     p.segments[0].x = x;
     p.segments[0].y = y;
-    if (x_velocity !== undefined) {
-        p.segments[0].x_velocity = x_velocity;
-    }
-    if (y_velocity !== undefined) {
-        p.segments[0].y_velocity = y_velocity;
+    if (direction !== undefined) {
+        p.segments[0].direction = direction;
     }
 };
 
@@ -125,6 +108,4 @@ GameCore.prototype.playersList = function() {
         Object.keys(players).map(function(key){ return players[key]; });
 };
 
-if (typeof global != "undefined") {
-    module.exports = GameCore;
-}
+module.exports = GameCore;

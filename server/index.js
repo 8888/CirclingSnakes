@@ -3,54 +3,40 @@ var express = require('express'),
     app = express(),
     http = require('http').Server(app),
     io = require('socket.io')(http),
+    path = require('path'),
     port = 3000;
 
 /* express server */
-app.use('/', express.static(__dirname + '/'));
+app.use('/', express.static(path.join(__dirname, '../')));
 app.get('/', function(req, res){
-    res.sendFile(__dirname + '/view/index.html');
+    res.sendFile(path.join(__dirname, '../view', 'index.html'));
 });
 
-http.listen(port, function(){
-    console.log('listening on port "' + port + '"');
-});
+http.listen(port, function(){ console.log('listening on port "' + port + '"'); });
 
 /* socket.io server */
-//var Player = require('./player.js');
-var game_core = require('./core.js');
+var game_core = require('../model/core.js');
 let game_server = new game_core(640, 640);
-// TODO: for multiple games, have a dictionary instead
-// of a single instance.
-
 io.on('connection', function(socket) {
-    // all communication starts here
-
-    /* Normally everything should be wrapped in a 
-     * 'socket.on(' but for our special case, we 
-     * do want everyone to join right away without
-     * an explicit call to game_join or whatnot.
-     */
-    /* GAME JOIN BEGIN */
+    /* Normally everything should be wrapped in a 'socket.on(' but 
+     * for our special case, we do want everyone to join right away
+     * withoutan explicit call to game_join or whatnot. */
     playerAdd(socket, socket.id, true);
-    /* GAME JOIN END */
 
     socket.on('disconnect', function() {
         game_server.playerDelete(socket.id);
         socket.broadcast.emit('playerDelete', {playerId: socket.id});
         console.log(">Player Delete", socket.id);
     });
-
     socket.on('playerAdd', function(id) {
         playerAdd(socket, id);
     });
-
     socket.on('playerTurn', function(playerId, direction) {
         game_server.playerUpdateVelocity(playerId, 0, direction);
         socket.broadcast.emit('playerTurn', {
             playerId: playerId,
             direction: direction
         });
-        console.log(">Player turn and update", playerId);
     });
 });
 
@@ -74,7 +60,6 @@ setInterval(function(){
     gameUpdateTime = process.hrtime(gameUpdateTime);
     let gameDelta = Math.round((gameUpdateTime[0]*1000) + (gameUpdateTime[1]/1000000));
     gameUpdateTime = process.hrtime();
-    //console.log(gameDelta);
 
     for (let playerId in game_server.players) {
         let p = game_server.players[playerId];
