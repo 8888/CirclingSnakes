@@ -106,6 +106,13 @@ GameCore.prototype.playerUpdateAttributes = function(id, x, y, direction) {
     }
 };
 
+GameCore.prototype.playersList = function() {
+    let players = this.players;
+    return Object["values"] ?
+        Object.values(players) :
+        Object.keys(players).map(function(key){ return players[key]; });
+};
+
 GameCore.prototype.fruitCreate = function(id) {
     // create a new Fruit object
     return new Fruit(id, Math.trunc(Math.random() * this.width), Math.trunc(Math.random() * this.height));
@@ -117,11 +124,15 @@ GameCore.prototype.fruitAdd = function(fruit) {
     this.fruit[fruit.id] = fruit;
 };
 
-GameCore.prototype.playersList = function() {
-    let players = this.players;
+GameCore.prototype.fruitUpdateEntity = function(fruit) {
+    this.fruit[fruit.id] = fruit;
+};
+
+GameCore.prototype.fruitList = function() {
+    let fruit = this.fruit;
     return Object["values"] ?
-        Object.values(players) :
-        Object.keys(players).map(function(key){ return players[key]; });
+        Object.values(fruit) :
+        Object.keys(fruit).map(function(key){ return fruit[key]; });
 };
 
 module.exports = GameCore;
