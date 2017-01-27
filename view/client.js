@@ -38,7 +38,7 @@ window.addEventListener("keydown", function(event) {
 socket.on('connect', function() { connectionDisplay.innerText=""; });
 socket.on('connect_error', function(err) { connectionDisplay.innerText="Not Connected!"; });
 socket.on('gameJoin', function(data) {
-    /* { player: object, players: [object] }*/
+    /* { player: object, players: [object], fruit: [object] }*/
     playerId = data.playerId;
     clientDisplay.innerText = playerId;
     for(let i = 0; i < data.players.length; i++) {
@@ -48,6 +48,10 @@ socket.on('gameJoin', function(data) {
     function playerUpdateVelocity(id, direction) {
         game.playerUpdateVelocity(id, 0, direction);
         socket.emit('playerTurn', id, direction);
+    }
+
+    for(let i = 0; i < data.fruit.length; i++) {
+        game.fruitAdd(fruitFromData(data.fruit[i]));
     }
 
     keyDownEvents = {
@@ -99,6 +103,12 @@ socket.on('playersUpdate', function(data) {
 socket.on('fruitAdd', function(data) {
     /* { fruit: object } */
     game.fruitAdd(fruitFromData(data.fruit));
+});
+socket.on('fruitUpdate', function(data) {
+    game.fruit = {};
+    for(let i = 0; i < data.fruit.length; i++) {
+        game.fruitUpdateEntity(fruitFromData(data.fruit[i]));
+    }
 });
 
 // Development features

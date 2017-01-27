@@ -48,7 +48,8 @@ let playerAdd = function(socket, id, announce) {
     if (announce) {
         socket.emit('gameJoin', {
             playerId: player.id,
-            players: game_server.playersList()
+            players: game_server.playersList(),
+            fruit: game_server.fruitList()
         });
     }
     socket.broadcast.emit('playerAdd', { player: player });
@@ -82,6 +83,9 @@ setInterval(function(){
 setInterval(function() {
     io.emit('playersUpdate', { 
         players: game_server.playersList()
+    });
+    io.emit('fruitUpdate', { 
+        fruit: game_server.fruitList()
     });
 }, 1000);
 
