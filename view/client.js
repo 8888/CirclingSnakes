@@ -3,7 +3,8 @@
 let GameCore = require('../model/core.js'),
     Segment = require('../model/segment.js'),
     Player = require('../model/player.js'),
-    Utility = require('../model/utility.js');
+    Utility = require('../model/utility.js'),
+    Fruit = require('../model/fruit.js');
 let socket = io(),
     game = new GameCore(640, 640);
 // TODO: width/height should be passed back from server
@@ -71,6 +72,11 @@ function playerFromData(playerData) {
     return p;
 }
 
+function fruitFromData(fruitData) {
+    let f = new Fruit(fruitData.id, fruitData.x, fruitData.y);
+    return f;
+}
+
 socket.on('playerTurn', function(data) {
     /* { playerId: int, direction: int } */
     game.playerUpdateVelocity(data.playerId, 0, data.direction);
@@ -88,6 +94,11 @@ socket.on('playersUpdate', function(data) {
     for(let i = 0; i < data.players.length; i++) {
         game.playerUpdateEntity(playerFromData(data.players[i]));
     }
+});
+
+socket.on('fruitAdd', function(data) {
+    /* { fruit: object } */
+    game.fruitAdd(fruitFromData(data.fruit));
 });
 
 // Development features
@@ -112,6 +123,7 @@ function update(delta) {
 
 function display() {
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    // Draw players
     ctx.font = "18px New Courier";
     for (let user in game.players) {
         let p = game.players[user];
@@ -133,6 +145,16 @@ function display() {
         }   
     }
 
+    // Draw fruit
+    for (let fruit in game.fruit) {
+        let f = game.fruit[fruit];
+        ctx.fillStyle = "rgba(250, 10, 10, 0.9)";
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.radius, 0, 2*Math.PI);
+        ctx.fill();
+    }
+
+    // Center line
     ctx.strokeStyle = "black";
     ctx.beginPath();
     ctx.moveTo(0, 320);

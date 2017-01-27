@@ -55,6 +55,12 @@ let playerAdd = function(socket, id, announce) {
     console.log(">Player Create", id);
 }
 
+let fruitAdd = function(id) {
+    let fruit = game_server.fruitCreate(id);
+    game_server.fruitAdd(fruit);
+    io.emit('fruitAdd', { fruit: fruit });
+}
+
 let gameUpdateTime = process.hrtime();
 setInterval(function(){
     gameUpdateTime = process.hrtime(gameUpdateTime);
@@ -78,3 +84,11 @@ setInterval(function() {
         players: game_server.playersList()
     });
 }, 1000);
+
+setInterval(function() {
+    // Generate fruit on set interval if the max has not been reached
+    if (Object.keys(game_server.fruit).length < game_server.fruitMax) {
+        let id = Math.trunc(Math.random() * 1000);
+        fruitAdd(id);
+    }
+}, game_server.fruitSpawnInterval);
