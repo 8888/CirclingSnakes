@@ -83,7 +83,8 @@ describe('Player.segmentAdd', function() {
     it('direction is same or perpendicular to previous', function () {
         player.segmentAdd(1, 1);
         let s0 = player.segments[0];
-        for(let d in u.directions) {
+        for(let i in u.directions) {
+            let d = u.directions[i];
             let s0 = player.segments[player.segments.length - 1];
             player.segmentAdd(1, 1, d);
             let s1 = player.segments[player.segments.length - 1];
@@ -96,7 +97,8 @@ describe('Player.segmentAdd', function() {
     });
     it('disallow reverse to previous', function() {
         /* jslint loopfunc: true */
-        for(let d in u.directions) {
+        for(let i in u.directions) {
+            let d = u.directions[i];
             player.segmentAdd(1, 1, d);
             expect(function() { player.segmentAdd(1, 1, u.directionReverse[d]); })
                 .throw(Error, 'Direction must not be reverse previous segment');
@@ -110,5 +112,10 @@ describe('Player.segmentAdd', function() {
         let s1 = player.segments[1];
         expect(s1.direction)
             .equals(s0.direction);
+        s1.direction = u.DIRECTION_NORTH;
+        player.segmentAdd();
+        let s2 = player.segments[1];
+        expect(s2.direction)
+            .equals(s1.direction);
     });
 });

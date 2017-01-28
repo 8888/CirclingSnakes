@@ -22,7 +22,7 @@ Utility.directionVelocity[Utility.DIRECTION_SOUTH] = [0, 25];
 Utility.directionVelocity[Utility.DIRECTION_EAST] = [25, 0];
 Utility.directionVelocity[Utility.DIRECTION_WEST] = [-25, 0];
 
-Utility.directions = [Utility.DIRECTION_EAST, Utility.DIRECTION_WEST, Utility.DIRECTION_NORTH, Utility.DIRECTION_SOUTH];
+Utility.directions = [Utility.DIRECTION_NORTH, Utility.DIRECTION_EAST, Utility.DIRECTION_SOUTH, Utility.DIRECTION_WEST];
 Utility.directionsEW = [Utility.DIRECTION_EAST, Utility.DIRECTION_WEST];
 Utility.directionsNS = [Utility.DIRECTION_NORTH, Utility.DIRECTION_SOUTH];
 

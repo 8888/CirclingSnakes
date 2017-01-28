@@ -23,15 +23,89 @@ describe('Segment.constructor', function() {
             .throw(Error, 'Valid X, Y required together');
         expect(function() { new s(7, Infinity); })
             .throw(Error, 'Valid X, Y required together');
-        expect(new s(7, 7))
-            .instanceOf(s);
+        let segment = new s(7, 7);
+        expect(segment)
+            .instanceOf(s)
+            .property('x')
+            .equal(7);
+        expect(segment)
+            .instanceOf(s)
+            .property('y')
+            .equal(7);
     });
-    it('requires valid direction when provided');
-    it('sets default direction when not provided');
-    it('requires valid waypoints when provided');
-    it('sets default waypoints when not provided');
-    it('requires valid size when provided');
-    it('sets default size when not provided');
+    it('requires valid direction when provided', function() {
+        expect(function() { new s(7, 7, null); })
+            .throw(Error, 'Valid direction required, when provided');
+        expect(function() { new s(7, 7, 12345); })
+            .throw(Error, 'Valid direction required, when provided');
+        expect(function() { new s(7, 7, "seven"); })
+            .throw(Error, 'Valid direction required, when provided');
+        expect(function() { new s(7, 7, Infinity); })
+            .throw(Error, 'Valid direction required, when provided');
+        for(let i = 0, l = u.directions.length; i < l; i++) {
+            let d = u.directions[i];
+            let segment = new s(7, 7, d);
+            expect(segment)
+                .instanceOf(s)
+                .property('direction')
+                .equal(d);
+        }
+    });
+    it('sets default direction when not provided', function() {
+        expect(new s(7, 7))
+            .instanceof(s)
+            .property('direction')
+            .equal(u.DIRECTION_EAST);
+    });
+    it('requires valid waypoints when provided', function() {
+        expect(function() { new s(7, 7, undefined, null); })
+            .throw(Error, 'Valid waypoint required, when provided');
+        expect(function() { new s(7, 7, undefined, 12345); })
+            .throw(Error, 'Valid waypoint required, when provided');
+        expect(function() { new s(7, 7, undefined, "seven"); })
+            .throw(Error, 'Valid waypoint required, when provided');
+        expect(function() { new s(7, 7, undefined, Infinity); })
+            .throw(Error, 'Valid waypoint required, when provided');
+        expect(new s(7, 7, undefined, [{ x: 7, y: 7, direction: u.DIRECTION_NORTH}]))
+            .instanceof(s)
+            .property('waypoints')
+            .a('array')
+            .length(1);
+    });
+    it('sets default waypoints when not provided', function() {
+        expect(new s(7, 7))
+            .instanceof(s)
+            .property('waypoints')
+            .a('array')
+            .length(0);
+        expect(new s(7, 7, u.DIRECTION_NORTH, undefined, 30))
+            .instanceof(s)
+            .property('waypoints')
+            .a('array')
+            .length(0);
+    });
+    it('requires valid size when provided', function() {
+        expect(function() { new s(7, 7, undefined, undefined, null); })
+            .throw(Error, 'Valid size required, when provided');
+        expect(function() { new s(7, 7, undefined, undefined, -12); })
+            .throw(Error, 'Valid size required, when provided');
+        expect(function() { new s(7, 7, undefined, undefined, 0); })
+            .throw(Error, 'Valid size required, when provided');
+        expect(function() { new s(7, 7, undefined, undefined, "seven"); })
+            .throw(Error, 'Valid size required, when provided');
+        expect(function() { new s(7, 7, undefined, undefined, Infinity); })
+            .throw(Error, 'Valid size required, when provided');
+        expect(new s(7, 7, undefined, undefined, 12))
+            .instanceOf(s)
+            .property('size')
+            .equal(12);
+    });
+    it('sets default size when not provided', function() {
+        expect(new s(7, 7))
+            .instanceof(s)
+            .property('size')
+            .equal(20);
+    });
 });
 
 describe('Segment.waypointAdd', function() {
@@ -56,8 +130,32 @@ describe('Segment.waypointAdd', function() {
             .throw(Error, 'Valid X, Y required together');
         expect(function() { segment.waypointAdd(7, Infinity, u.DIRECTION_WEST); })
             .throw(Error, 'Valid X, Y required together');
-        expect(segment.waypointAdd(7, 7, u.DIRECTION_WEST))
-            .instanceOf(s);
+        segment.waypointAdd(7, 7, u.DIRECTION_WEST);
     });
-    it('requires valid direction');
+    it('requires valid direction', function() {
+        expect(function() { segment.waypointAdd(7, 7, null); })
+            .throw(Error, 'Valid direction required');
+        expect(function() { segment.waypointAdd(7, 7, 12345); })
+            .throw(Error, 'Valid direction required');
+        expect(function() { segment.waypointAdd(7, 7, "seven"); })
+            .throw(Error, 'Valid direction required');
+        expect(function() { segment.waypointAdd(7, 7, Infinity); })
+            .throw(Error, 'Valid direction required');
+        for(let i = 0, l = u.directions.length; i < l; i++) {
+            let d = u.directions[i];
+            segment.waypointAdd(7, 7, d);
+        }
+    });
+    it('adds to the end and increases count', function() {
+        for(let i = 0, l = u.directions.length; i < l; i++) {
+            let d = u.directions[i];
+            segment.waypointAdd(7, 7, d);
+            expect(segment)
+                .property('waypoints')
+                .length(i + 1);
+            expect(segment.waypoints[i])
+                .property('direction')
+                .equals(d);
+        }
+    });
 });
