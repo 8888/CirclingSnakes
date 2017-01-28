@@ -1,4 +1,5 @@
 /* client-side: Attach user interface to server events */
+/* global io */
 'use strict';
 let GameCore = require('../model/core.js'),
     Segment = require('../model/segment.js'),
@@ -50,8 +51,8 @@ socket.on('gameJoin', function(data) {
         socket.emit('playerTurn', id, direction);
     }
 
-    for(let i = 0; i < data.fruit.length; i++) {
-        game.fruitAdd(fruitFromData(data.fruit[i]));
+    for(let i = 0; i < data.fruits.length; i++) {
+        game.fruitAdd(fruitFromData(data.fruits[i]));
     }
 
     keyDownEvents = {
@@ -94,9 +95,13 @@ socket.on('playerDelete', function(data) {
     game.playerDelete(data.playerId);
 });
 socket.on('playersUpdate', function(data) {
-    game.players = [];
     for(let i = 0; i < data.players.length; i++) {
-        game.playerUpdateEntity(playerFromData(data.players[i]));
+        let p = playerFromData(data.players[i]);
+        if (game.players[p.id]) {
+            game.playerUpdateEntity(p);
+        } else {
+            game.playerAdd(p);
+        }
     }
 });
 
@@ -105,9 +110,13 @@ socket.on('fruitAdd', function(data) {
     game.fruitAdd(fruitFromData(data.fruit));
 });
 socket.on('fruitUpdate', function(data) {
-    game.fruit = {};
-    for(let i = 0; i < data.fruit.length; i++) {
-        game.fruitUpdateEntity(fruitFromData(data.fruit[i]));
+    for(let i = 0; i < data.fruits.length; i++) {
+        let f = fruitFromData(data.fruits[i]);
+        if (game.fruits[f.id]) {
+            game.fruitUpdateEntity(f);
+        } else {
+            game.fruitAdd(f);
+        }
     }
 });
 
@@ -155,10 +164,9 @@ function display() {
         }   
     }
 
-    // Draw fruit
-    for (let fruit in game.fruit) {
-        let f = game.fruit[fruit];
-        ctx.fillStyle = "rgba(250, 10, 10, 0.9)";
+    ctx.fillStyle = "rgba(250, 10, 10, 0.9)";
+    for (let fruit in game.fruits) {
+        let f = game.fruits[fruit];
         ctx.beginPath();
         ctx.arc(f.x, f.y, f.radius, 0, 2*Math.PI);
         ctx.fill();
