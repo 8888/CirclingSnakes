@@ -141,12 +141,31 @@ GameCore.prototype.fruitCreate = function(id) {
 
 GameCore.prototype.fruitAdd = function(fruit) {
     // add the Fruit to the list of in-play fruit
+    if (!(fruit instanceof Fruit)) {
+        throw new Error('Parameter \'fruit\' required of type Fruit');
+    } else if (this.fruits[fruit.id]) {
+        throw new Error('Duplicate fruit id cannot be added');
+    }
     this.fruits[fruit.id] = fruit;
 };
 
-GameCore.prototype.fruitDelete = function() {};
+GameCore.prototype.fruitDelete = function(id) {
+    // delete the Fruit object
+    if (typeof id !== "string" || id.length === 0) {
+        throw new Error('Parameter \'id\' required of type string');
+    } else if (!this.fruits[id]) {
+        throw new Error('Fruit does not exist to delete');
+    }
+
+    delete this.fruits[id];
+};
 
 GameCore.prototype.fruitUpdateEntity = function(fruit) {
+    if (!(fruit instanceof Fruit)) {
+        throw new Error('Parameter \'fruit\' required of type Fruit');
+    } else if (!this.fruits[fruit.id]) {
+        throw new Error('Fruit does not exist to update');
+    }
     this.fruits[fruit.id] = fruit;
 };
 
