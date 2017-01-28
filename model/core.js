@@ -170,6 +170,7 @@ GameCore.prototype.fruitUpdateEntity = function(fruit) {
 };
 
 GameCore.prototype.fruitList = function() {
+    // returns an array of Fruit objects
     for (let f in this.fruits) {
         if (!(this.fruits[f] instanceof Fruit)) {
             throw new Error('Items required of type Fruit');
