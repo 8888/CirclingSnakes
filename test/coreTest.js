@@ -370,14 +370,20 @@ describe('GameCore.fruitUpdateEntity', function() {
 
 describe('GameCore.fruitList', function() {
     let gameCore = null,
-        fruit = null;
+        fruitA = null,
+        fruitB = null,
+        fruitC = null;
     beforeEach(function() {
         gameCore = new c(12, 12);
-        fruit = new Fruit("asdf", 12, 12);
+        fruitA = new Fruit("asdf", 12, 12);
+        fruitB = new Fruit("bsdf", 12, 12);
+        fruitC = new Fruit("csdf", 12, 12);
     });
     it('returns array, length matches fruits count', function() {
-        gameCore.fruitAdd(fruit);
-        expect(Object.keys(gameCore.fruitList())).length(1);         
+        gameCore.fruitAdd(fruitA);
+        gameCore.fruitAdd(fruitB);
+        gameCore.fruitAdd(fruitC);
+        expect(gameCore.fruitList()).length(3);     
     });
     it('items are type Fruit', function() {
         expect(function() {
@@ -402,11 +408,11 @@ describe('GameCore.fruitList', function() {
             .throw(Error, 'Items required of type Fruit');
     });
     it('items represent all GameCore Fruits', function() {
-        gameCore.fruitAdd(fruit);
-        expect(function() {
-            for (let fruit in gameCore.fruits) {
-                expect(fruit == gameCore.fruitList().fruit);
-            }
-        });
+        gameCore.fruitAdd(fruitA);
+        gameCore.fruitAdd(fruitB);
+        gameCore.fruitAdd(fruitC);
+        for (let fruit in gameCore.fruits) {
+            expect(gameCore.fruit).equals(gameCore.fruitList().fruit);
+        }
     });
 });
