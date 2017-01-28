@@ -411,8 +411,9 @@ describe('GameCore.fruitList', function() {
         gameCore.fruitAdd(fruitA);
         gameCore.fruitAdd(fruitB);
         gameCore.fruitAdd(fruitC);
+        let fruitList = gameCore.fruitList();
         for (let f in gameCore.fruits) {
-            expect(gameCore.fruitList().indexOf(gameCore.fruits[f])).not.equal(-1);
+            expect(fruitList).contain(gameCore.fruits[f]);
         }
     });
 });
