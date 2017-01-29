@@ -4,7 +4,8 @@ let chai = require('chai'),
 
 let c = require('../model/core.js'),
     Player = require('../model/player.js'),
-    Fruit = require('../model/fruit.js');
+    Fruit = require('../model/fruit.js'),
+    Utility = require('../model/utility.js');
 
 let intgerRange = [];
 describe('GameCore.constructor', function() {
@@ -203,9 +204,43 @@ describe('GameCore.playerUpdateEntity', function() {
 });
 
 describe('GameCore.playerUpdate', function() {
-    it('requires positive delta');
+    let gameCore = null,
+        player = null;
+    beforeEach(function() {
+        gameCore = new c(12, 12);
+        player = new Player("asdf", 6, 6);
+    });
+    it('requires positive delta', function() {
+        gameCore.playerAdd(player);
+        expect(function() { gameCore.playerUpdate(player.id); })
+            .throw(Error, 'Parameter \'delta\' required to be positive');
+        expect(function() { gameCore.playerUpdate(player.id, null); })
+            .throw(Error, 'Parameter \'delta\' required to be positive');
+        expect(function() { gameCore.playerUpdate(player.id, undefined); })
+            .throw(Error, 'Parameter \'delta\' required to be positive');
+        expect(function() { gameCore.playerUpdate(player.id, 0); })
+            .throw(Error, 'Parameter \'delta\' required to be positive');
+        expect(function() { gameCore.playerUpdate(player.id, -1); })
+            .throw(Error, 'Parameter \'delta\' required to be positive');
+        expect(function() { gameCore.playerUpdate(player.id, "1"); })
+            .throw(Error, 'Parameter \'delta\' required to be positive');
+    });
     it('applies velocity based on delta');
-    it('advances segment past starting location');
+    it('advances segment past starting location', function() {
+        gameCore.playerAdd(player);
+        for (let d = 0; d < Utility.directionsEW.length; d++) {
+            let x = player.segments[0].x;
+            player.segments[0].direction = Utility.directionsEW[d];
+            gameCore.playerUpdate(player.id, 20);
+            expect(x).not.equal(player.segments[0].x);
+        }
+        for (let d = 0; d < Utility.directionsNS.length; d++) {
+            let y = player.segments[0].y;
+            player.segments[0].direction = Utility.directionsNS[d];
+            gameCore.playerUpdate(player.id, 20);
+            expect(y).not.equal(player.segments[0].y);
+        }
+    });
     it('does not move player outside board');
     it('kills player moving into walls');
     it('moves each segment in their direction');
@@ -231,9 +266,53 @@ describe('GameCore.playerUpdateAttributes', function() {
 });
 
 describe('GameCore.playersList', function() {
-    it('returns array, length matches players count');
-    it('items are type Player');
-    it('items represent all GameCore Players');
+    let gameCore = null,
+        playerA = null,
+        playerB = null,
+        playerC = null;
+    beforeEach(function() {
+        gameCore = new c(12, 12);
+        playerA = new Player("asdf", 12, 12);
+        playerB = new Player("bsdf", 8, 8);
+        playerC = new Player("csdf", 4, 4);
+    });
+    it('returns array, length matches players count', function() {
+        gameCore.playerAdd(playerA);
+        gameCore.playerAdd(playerB);
+        gameCore.playerAdd(playerC);
+        expect(gameCore.playersList()).length(3);
+    });
+    it('items are type Player', function() {
+        expect(function() {
+            gameCore.players.asdf = null;
+            gameCore.playersList();
+        })
+            .throw(Error, 'Items required of type Player');
+        expect(function() {
+            gameCore.players.asdf = undefined;
+            gameCore.playersList();
+        })
+            .throw(Error, 'Items required of type Player');
+        expect(function() {
+            gameCore.players.asdf = 'asdf';
+            gameCore.playersList();
+        })
+            .throw(Error, 'Items required of type Player');
+        expect(function() {
+            gameCore.players.asdf = 1234;
+            gameCore.playersList();
+        })
+            .throw(Error, 'Items required of type Player');
+    });
+    it('items represent all GameCore Players', function() {
+        gameCore.playerAdd(playerA);
+        gameCore.playerAdd(playerB);
+        gameCore.playerAdd(playerC);
+        let playersList = gameCore.playersList();
+        for (let p in gameCore.players) {
+            expect(playersList).contain(gameCore.players[p]);
+        }
+    });
 });
 
 describe('GameCore.fruitCreate', function() {

@@ -127,6 +127,11 @@ GameCore.prototype.playerUpdateAttributes = function(id, x, y, direction) {
 };
 
 GameCore.prototype.playersList = function() {
+    for (let p in this.players) {
+        if (!(this.players[p] instanceof Player)) {
+            throw new Error('Items required of type Player');
+        }
+    }
     let players = this.players;
     return Object.values ?
         Object.values(players) :
