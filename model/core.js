@@ -107,7 +107,20 @@ GameCore.prototype.playerUpdate = function(id, delta) {
 };
 
 GameCore.prototype.playerUpdateVelocity = function(id, segment, turn) {
+    // Changes the direction of a given segment
+    if (typeof id !== "string" || id.length === 0) {
+        throw new Error('Parameter \'id\' required of type string');
+    }
+    if (typeof segment !== "number") {
+        throw new Error('Parameter \'segment\' required of type number');
+    }
+    if (typeof turn !== "number") {
+        throw new Error('Parameter \'turn\' required of type number');
+    }
     let s = this.players[id].segments[segment];
+    if (s.direction == turn || s.direction == Utility.directionReverse[turn]) {
+        throw new Error('Provided direction must be perpendicular to current direction');
+    }
     s.direction = turn;
     if (this.players[id].segments.length > segment + 1) {
         let sNext = this.players[id].segments[segment + 1];
@@ -116,8 +129,6 @@ GameCore.prototype.playerUpdateVelocity = function(id, segment, turn) {
 };
 
 GameCore.prototype.playerUpdateAttributes = function(id, x, y, direction) {
-    // player_id, move to x, move to y
-    // move a player to a new x, y
     let p = this.players[id];
     p.segments[0].x = x;
     p.segments[0].y = y;
