@@ -229,14 +229,13 @@ describe('GameCore.playerUpdate', function() {
     it('advances segment past starting location', function() {
         gameCore.playerAdd(player);
         for (let d = 0; d < Utility.directions.length; d++) {
-            let x = player.segments[0].x,
-                y = player.segments[0].y;
             player.segments[0].direction = Utility.directions[d];
-            gameCore.playerUpdate(player.id, 20);
             if (Utility.directionsEW.indexOf(Utility.directions[d]) != -1) {
-                expect(x).not.equal(player.segments[0].x);
+                expect(function() { gameCore.playerUpdate(player.id, 20); })
+                    .change(player.segments[0], 'x');
             } else {
-                expect(y).not.equal(player.segments[0].y);
+                expect(function() { gameCore.playerUpdate(player.id, 20); })
+                    .change(player.segments[0], 'y');
             }
         }
     });
@@ -372,8 +371,7 @@ describe('GameCore.playerUpdateAttributes', function() {
             .throw(Error, 'Player requires atleast one segment');
     });
     it('requires valid direction if provided', function() {
-        expect(function() { gameCore.playerUpdateAttributes("asdf", 12, 12); })
-            .throw(Error, 'Parameter \'direction\' required of type number');
+        gameCore.playerAdd(player);
         expect(function() { gameCore.playerUpdateAttributes("asdf", 12, 12, null); })
             .throw(Error, 'Parameter \'direction\' required of type number');
         expect(function() { gameCore.playerUpdateAttributes("asdf", 12, 12, []); })
@@ -384,6 +382,7 @@ describe('GameCore.playerUpdateAttributes', function() {
             .throw(Error, 'Parameter \'direction\' required of type number');
     });
     it('requires valid x', function() {
+        gameCore.playerAdd(player);
         expect(function() { gameCore.playerUpdateAttributes("asdf"); })
             .throw(Error, 'Parameter \'x\' required of type number');
         expect(function() { gameCore.playerUpdateAttributes("asdf", null); })
@@ -398,6 +397,7 @@ describe('GameCore.playerUpdateAttributes', function() {
             .throw(Error, 'Parameter \'x\' required of type number');
     });
     it('requires valid y', function() {
+        gameCore.playerAdd(player);
         expect(function() { gameCore.playerUpdateAttributes("asdf", 12); })
             .throw(Error, 'Parameter \'y\' required of type number');
         expect(function() { gameCore.playerUpdateAttributes("asdf", 12, null); })
