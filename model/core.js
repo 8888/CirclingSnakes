@@ -107,7 +107,20 @@ GameCore.prototype.playerUpdate = function(id, delta) {
 };
 
 GameCore.prototype.playerUpdateVelocity = function(id, segment, turn) {
+    // Changes the direction of a given segment
+    if (typeof id !== "string" || id.length === 0) {
+        throw new Error('Parameter \'id\' required of type string');
+    }
+    if (typeof segment !== "number") {
+        throw new Error('Parameter \'segment\' required of type number');
+    }
+    if (typeof turn !== "number") {
+        throw new Error('Parameter \'turn\' required of type number');
+    }
     let s = this.players[id].segments[segment];
+    if (s.direction == turn || s.direction == Utility.directionReverse[turn]) {
+        throw new Error('Provided direction must be perpendicular to current direction');
+    }
     s.direction = turn;
     if (this.players[id].segments.length > segment + 1) {
         let sNext = this.players[id].segments[segment + 1];
@@ -116,17 +129,38 @@ GameCore.prototype.playerUpdateVelocity = function(id, segment, turn) {
 };
 
 GameCore.prototype.playerUpdateAttributes = function(id, x, y, direction) {
-    // player_id, move to x, move to y
-    // move a player to a new x, y
-    let p = this.players[id];
-    p.segments[0].x = x;
-    p.segments[0].y = y;
-    if (direction !== undefined) {
-        p.segments[0].direction = direction;
+    if (typeof id !== "string" || id.length === 0) {
+        throw new Error('Parameter \'id\' required of type string');
+    } else if (!this.players[id]) {
+        throw new Error('Player does not exist to update attributes of');
+    } else if(this.players[id].segments.length === 0) {
+        throw new Error('Player requires atleast one segment');
+    }
+    if (direction !== undefined && typeof direction !== "number") {
+        throw new Error('Parameter \'direction\' required of type number');
+    }
+    if (typeof x !== "number") {
+        throw new Error('Parameter \'x\' required of type number');
+    }
+    if (typeof y !== "number") {
+        throw new Error('Parameter \'y\' required of type number');
+    }
+    if (x >= 0 && x <= this.width && y >= 0 && y <= this.height) {
+        let p = this.players[id];
+        p.segments[0].x = x;
+        p.segments[0].y = y;
+        if (direction !== undefined) {
+            p.segments[0].direction = direction;
+        }
     }
 };
 
 GameCore.prototype.playersList = function() {
+    for (let p in this.players) {
+        if (!(this.players[p] instanceof Player)) {
+            throw new Error('Items required of type Player');
+        }
+    }
     let players = this.players;
     return Object.values ?
         Object.values(players) :

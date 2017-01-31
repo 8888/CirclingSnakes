@@ -4,7 +4,8 @@ let chai = require('chai'),
 
 let c = require('../model/core.js'),
     Player = require('../model/player.js'),
-    Fruit = require('../model/fruit.js');
+    Fruit = require('../model/fruit.js'),
+    Utility = require('../model/utility.js');
 
 let intgerRange = [];
 describe('GameCore.constructor', function() {
@@ -203,37 +204,282 @@ describe('GameCore.playerUpdateEntity', function() {
 });
 
 describe('GameCore.playerUpdate', function() {
-    it('requires positive delta');
+    let gameCore = null,
+        player = null;
+    beforeEach(function() {
+        gameCore = new c(12, 12);
+        player = new Player("asdf", 6, 6);
+    });
+    it('requires positive delta', function() {
+        gameCore.playerAdd(player);
+        expect(function() { gameCore.playerUpdate(player.id); })
+            .throw(Error, 'Parameter \'delta\' required to be positive');
+        expect(function() { gameCore.playerUpdate(player.id, null); })
+            .throw(Error, 'Parameter \'delta\' required to be positive');
+        expect(function() { gameCore.playerUpdate(player.id, undefined); })
+            .throw(Error, 'Parameter \'delta\' required to be positive');
+        expect(function() { gameCore.playerUpdate(player.id, 0); })
+            .throw(Error, 'Parameter \'delta\' required to be positive');
+        expect(function() { gameCore.playerUpdate(player.id, -1); })
+            .throw(Error, 'Parameter \'delta\' required to be positive');
+        expect(function() { gameCore.playerUpdate(player.id, "1"); })
+            .throw(Error, 'Parameter \'delta\' required to be positive');
+    });
     it('applies velocity based on delta');
-    it('advances segment past starting location');
-    it('does not move player outside board');
+    it('advances segment past starting location', function() {
+        gameCore.playerAdd(player);
+        for (let d = 0; d < Utility.directions.length; d++) {
+            player.segments[0].direction = Utility.directions[d];
+            if (Utility.directionsEW.indexOf(Utility.directions[d]) != -1) {
+                expect(function() { gameCore.playerUpdate(player.id, 20); })
+                    .change(player.segments[0], 'x');
+            } else {
+                expect(function() { gameCore.playerUpdate(player.id, 20); })
+                    .change(player.segments[0], 'y');
+            }
+        }
+    });
+    it('does not move player outside board', function() {
+        gameCore.playerAdd(player);
+        for (let d = 0; d < Utility.directions.length; d++) {
+            player.segments[0].direction = Utility.directions[d];
+            gameCore.playerUpdate(player.id, 1000);
+            expect(player.segments[0].x).least(0);
+            expect(player.segments[0].y).least(0);
+            expect(player.segments[0].x).most(gameCore.width);
+            expect(player.segments[0].y).most(gameCore.height);
+        }
+    });
     it('kills player moving into walls');
     it('moves each segment in their direction');
     it('turns each segment at waypoint');
 });
 
 describe('GameCore.playerUpdateVelocity', function() {
-    it('requires valid player');
-    it('requires valid segment');
-    it('requires perpendicular direction');
-    it('does not change segment count');
-    it('updates only `segment` direction');
-    it('propagates turn to next segment');
+    let gameCore = null,
+        player = null;
+    beforeEach(function() {
+        gameCore = new c(12, 12);
+        player = new Player("asdf", 12, 12);
+    });
+    it('requires valid id', function() {
+        expect(function() { gameCore.playerUpdateVelocity(); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+        expect(function() { gameCore.playerUpdateVelocity(null); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+        expect(function() { gameCore.playerUpdateVelocity(undefined); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+        expect(function() { gameCore.playerUpdateVelocity([]); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+        expect(function() { gameCore.playerUpdateVelocity(''); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+        expect(function() { gameCore.playerUpdateVelocity(3982); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+    });
+    it('requires valid segment', function() {
+        expect(function() { gameCore.playerUpdateVelocity("asdf"); })
+            .throw(Error, 'Parameter \'segment\' required of type number');
+        expect(function() { gameCore.playerUpdateVelocity("asdf", null); })
+            .throw(Error, 'Parameter \'segment\' required of type number');
+        expect(function() { gameCore.playerUpdateVelocity("asdf", undefined); })
+            .throw(Error, 'Parameter \'segment\' required of type number');
+        expect(function() { gameCore.playerUpdateVelocity("asdf", []); })
+            .throw(Error, 'Parameter \'segment\' required of type number');
+        expect(function() { gameCore.playerUpdateVelocity("asdf", ''); })
+            .throw(Error, 'Parameter \'segment\' required of type number');
+        expect(function() { gameCore.playerUpdateVelocity("asdf", "asdf"); })
+            .throw(Error, 'Parameter \'segment\' required of type number');
+    });
+    it('requires valid turn', function() {
+        expect(function() { gameCore.playerUpdateVelocity("asdf", 0); })
+            .throw(Error, 'Parameter \'turn\' required of type number');
+        expect(function() { gameCore.playerUpdateVelocity("asdf", 0, null); })
+            .throw(Error, 'Parameter \'turn\' required of type number');
+        expect(function() { gameCore.playerUpdateVelocity("asdf", 0, undefined); })
+            .throw(Error, 'Parameter \'turn\' required of type number');
+        expect(function() { gameCore.playerUpdateVelocity("asdf", 0, []); })
+            .throw(Error, 'Parameter \'turn\' required of type number');
+        expect(function() { gameCore.playerUpdateVelocity("asdf", 0, ''); })
+            .throw(Error, 'Parameter \'turn\' required of type number');
+        expect(function() { gameCore.playerUpdateVelocity("asdf", 0, "asdf"); })
+            .throw(Error, 'Parameter \'turn\' required of type number');
+    });
+    it('requires perpendicular direction', function() {
+        gameCore.playerAdd(player);
+        for (let d = 0; d < Utility.directions.length; d++) {
+            player.segments[0].direction = Utility.directions[d];
+            expect(function() { gameCore.playerUpdateVelocity(player.id, 0, Utility.directions[d]); })
+                .throw(Error, 'Provided direction must be perpendicular to current direction');
+            expect(function() { gameCore.playerUpdateVelocity(player.id, 0, Utility.directionReverse[Utility.directions[d]]); })
+                .throw(Error, 'Provided direction must be perpendicular to current direction');
+        }
+    });
+    it('does not change segment count', function() {
+        gameCore.playerAdd(player);
+        let count = player.segments.length;
+        gameCore.playerUpdateVelocity(player.id, 0, Utility.DIRECTION_NORTH);
+        expect(count).equal(player.segments.length);
+    });
+    it('updates only `segment` direction', function() {
+        gameCore.playerAdd(player);
+        let x = player.segments[0].x,
+            y = player.segments[0].y,
+            s = player.segments[0].size;
+        gameCore.playerUpdateVelocity(player.id, 0, Utility.DIRECTION_NORTH);
+        expect(player.segments[0].x).equal(x);
+        expect(player.segments[0].y).equal(y);
+        expect(player.segments[0].size).equal(s);
+    });
+    it('propagates turn to next segment', function() {
+        gameCore.playerAdd(player);
+        gameCore.playerUpdateVelocity(player.id, 0, Utility.DIRECTION_NORTH);
+        for (let s = 0; s < player.segments.length; s++) {
+            expect(player.segments[s].direction).equal(Utility.DIRECTION_NORTH);
+        }
+    });
 });
 
 describe('GameCore.playerUpdateAttributes', function() {
-    it('requires valid player id');
-    it('requires existing player');
-    it('requires existing player with atleast one segment');
-    it('requires valid direction if provided');
-    it('requires valid x');
-    it('requires valid y');
+    let gameCore = null,
+        player = null;
+    beforeEach(function() {
+        gameCore = new c(12, 12);
+        player = new Player("asdf", 12, 12);
+    });
+    it('requires valid player id', function () {
+        expect(function() { gameCore.playerUpdateAttributes(); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+        expect(function() { gameCore.playerUpdateAttributes(null); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+        expect(function() { gameCore.playerUpdateAttributes(undefined); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+        expect(function() { gameCore.playerUpdateAttributes([]); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+        expect(function() { gameCore.playerUpdateAttributes(''); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+        expect(function() { gameCore.playerUpdateAttributes(3982); })
+            .throw(Error, 'Parameter \'id\' required of type string');
+    });
+    it('requires existing player', function() {
+        expect(function() { gameCore.playerUpdateAttributes("asdf"); })
+            .throw(Error, 'Player does not exist to update attributes of');
+    });
+    it('requires existing player with atleast one segment', function() {
+        gameCore.playerAdd(player);
+        player.segments = [];
+        expect(function() { gameCore.playerUpdateAttributes("asdf"); })
+            .throw(Error, 'Player requires atleast one segment');
+    });
+    it('requires valid direction if provided', function() {
+        gameCore.playerAdd(player);
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 12, 12, null); })
+            .throw(Error, 'Parameter \'direction\' required of type number');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 12, 12, []); })
+            .throw(Error, 'Parameter \'direction\' required of type number');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 12, 12, ''); })
+            .throw(Error, 'Parameter \'direction\' required of type number');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 12, 12, "asdf"); })
+            .throw(Error, 'Parameter \'direction\' required of type number');
+    });
+    it('requires valid x', function() {
+        gameCore.playerAdd(player);
+        expect(function() { gameCore.playerUpdateAttributes("asdf"); })
+            .throw(Error, 'Parameter \'x\' required of type number');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", null); })
+            .throw(Error, 'Parameter \'x\' required of type number');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", undefined); })
+            .throw(Error, 'Parameter \'x\' required of type number');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", []); })
+            .throw(Error, 'Parameter \'x\' required of type number');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", ''); })
+            .throw(Error, 'Parameter \'x\' required of type number');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", "asdf"); })
+            .throw(Error, 'Parameter \'x\' required of type number');
+    });
+    it('requires valid y', function() {
+        gameCore.playerAdd(player);
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 12); })
+            .throw(Error, 'Parameter \'y\' required of type number');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 12, null); })
+            .throw(Error, 'Parameter \'y\' required of type number');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 12, undefined); })
+            .throw(Error, 'Parameter \'y\' required of type number');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 12, []); })
+            .throw(Error, 'Parameter \'y\' required of type number');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 12, ''); })
+            .throw(Error, 'Parameter \'y\' required of type number');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 12, "asdf"); })
+            .throw(Error, 'Parameter \'y\' required of type number');
+    });
+    it('does not move player outside board', function() {
+        gameCore.playerAdd(player);
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 15, 12); })
+            .not.change(player.segments[0], 'x');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 15, 12); })
+            .not.change(player.segments[0], 'y');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", -1, 12); })
+            .not.change(player.segments[0], 'x');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", -1, 12); })
+            .not.change(player.segments[0], 'y');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 12, 15); })
+            .not.change(player.segments[0], 'x');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 12, 15); })
+            .not.change(player.segments[0], 'y');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 12, -1); })
+            .not.change(player.segments[0], 'x');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 12, -1); })
+            .not.change(player.segments[0], 'y');
+    });
 });
 
 describe('GameCore.playersList', function() {
-    it('returns array, length matches players count');
-    it('items are type Player');
-    it('items represent all GameCore Players');
+    let gameCore = null,
+        playerA = null,
+        playerB = null,
+        playerC = null;
+    beforeEach(function() {
+        gameCore = new c(12, 12);
+        playerA = new Player("asdf", 12, 12);
+        playerB = new Player("bsdf", 8, 8);
+        playerC = new Player("csdf", 4, 4);
+    });
+    it('returns array, length matches players count', function() {
+        gameCore.playerAdd(playerA);
+        gameCore.playerAdd(playerB);
+        gameCore.playerAdd(playerC);
+        expect(gameCore.playersList()).length(3);
+    });
+    it('items are type Player', function() {
+        expect(function() {
+            gameCore.players.asdf = null;
+            gameCore.playersList();
+        })
+            .throw(Error, 'Items required of type Player');
+        expect(function() {
+            gameCore.players.asdf = undefined;
+            gameCore.playersList();
+        })
+            .throw(Error, 'Items required of type Player');
+        expect(function() {
+            gameCore.players.asdf = 'asdf';
+            gameCore.playersList();
+        })
+            .throw(Error, 'Items required of type Player');
+        expect(function() {
+            gameCore.players.asdf = 1234;
+            gameCore.playersList();
+        })
+            .throw(Error, 'Items required of type Player');
+    });
+    it('items represent all GameCore Players', function() {
+        gameCore.playerAdd(playerA);
+        gameCore.playerAdd(playerB);
+        gameCore.playerAdd(playerC);
+        let playersList = gameCore.playersList();
+        for (let p in gameCore.players) {
+            expect(playersList).contain(gameCore.players[p]);
+        }
+    });
 });
 
 describe('GameCore.fruitCreate', function() {
