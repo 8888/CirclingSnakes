@@ -110,12 +110,16 @@ GameCore.prototype.playerUpdateVelocity = function(id, segment, turn) {
     // Changes the direction of a given segment
     if (typeof id !== "string" || id.length === 0) {
         throw new Error('Parameter \'id\' required of type string');
+    } else if (!this.players[id]) {
+        throw new Error('Player does not exist to update velocity of');
     }
     if (typeof segment !== "number") {
         throw new Error('Parameter \'segment\' required of type number');
+    } else if (!this.players[id].segments[segment]) {
+        throw new Error('Segment does not exist to update velocity of');
     }
-    if (typeof turn !== "number") {
-        throw new Error('Parameter \'turn\' required of type number');
+    if (typeof turn !== "number" || Utility.directions.indexOf(turn) == -1) {
+        throw new Error('Parameter \'turn\' required of type number in Utility.directions');
     }
     let s = this.players[id].segments[segment];
     if (s.direction == turn || s.direction == Utility.directionReverse[turn]) {
@@ -136,8 +140,10 @@ GameCore.prototype.playerUpdateAttributes = function(id, x, y, direction) {
     } else if(this.players[id].segments.length === 0) {
         throw new Error('Player requires atleast one segment');
     }
-    if (direction !== undefined && typeof direction !== "number") {
-        throw new Error('Parameter \'direction\' required of type number');
+    if (direction !== undefined) {
+        if (typeof direction !== "number" || Utility.directions.indexOf(direction) == -1) {
+            throw new Error('Parameter \'direction\' required of type number in Utility.directions');
+        }
     }
     if (typeof x !== "number") {
         throw new Error('Parameter \'x\' required of type number');
