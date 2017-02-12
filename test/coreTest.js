@@ -276,7 +276,12 @@ describe('GameCore.playerUpdateVelocity', function() {
         expect(function() { gameCore.playerUpdateVelocity(3982); })
             .throw(Error, 'Parameter \'id\' required of type string');
     });
+    it('requires existing player', function() {
+        expect(function() { gameCore.playerUpdateVelocity("asdf"); })
+            .throw(Error, 'Player does not exist to update velocity of');
+    });
     it('requires valid segment', function() {
+        gameCore.playerAdd(player);
         expect(function() { gameCore.playerUpdateVelocity("asdf"); })
             .throw(Error, 'Parameter \'segment\' required of type number');
         expect(function() { gameCore.playerUpdateVelocity("asdf", null); })
@@ -290,19 +295,27 @@ describe('GameCore.playerUpdateVelocity', function() {
         expect(function() { gameCore.playerUpdateVelocity("asdf", "asdf"); })
             .throw(Error, 'Parameter \'segment\' required of type number');
     });
+    it('requires existing segment', function() {
+        gameCore.playerAdd(player);
+        expect(function() { gameCore.playerUpdateVelocity("asdf", 2); })
+            .throw(Error, 'Segment does not exist to update velocity of');
+    });
     it('requires valid turn', function() {
+        gameCore.playerAdd(player);
         expect(function() { gameCore.playerUpdateVelocity("asdf", 0); })
-            .throw(Error, 'Parameter \'turn\' required of type number');
+            .throw(Error, 'Parameter \'turn\' required of type number in Utility.directions');
         expect(function() { gameCore.playerUpdateVelocity("asdf", 0, null); })
-            .throw(Error, 'Parameter \'turn\' required of type number');
+            .throw(Error, 'Parameter \'turn\' required of type number in Utility.directions');
         expect(function() { gameCore.playerUpdateVelocity("asdf", 0, undefined); })
-            .throw(Error, 'Parameter \'turn\' required of type number');
+            .throw(Error, 'Parameter \'turn\' required of type number in Utility.directions');
         expect(function() { gameCore.playerUpdateVelocity("asdf", 0, []); })
-            .throw(Error, 'Parameter \'turn\' required of type number');
+            .throw(Error, 'Parameter \'turn\' required of type number in Utility.directions');
         expect(function() { gameCore.playerUpdateVelocity("asdf", 0, ''); })
-            .throw(Error, 'Parameter \'turn\' required of type number');
+            .throw(Error, 'Parameter \'turn\' required of type number in Utility.directions');
         expect(function() { gameCore.playerUpdateVelocity("asdf", 0, "asdf"); })
-            .throw(Error, 'Parameter \'turn\' required of type number');
+            .throw(Error, 'Parameter \'turn\' required of type number in Utility.directions');
+        expect(function() { gameCore.playerUpdateVelocity("asdf", 0, 0b11); })
+            .throw(Error, 'Parameter \'turn\' required of type number in Utility.directions');
     });
     it('requires perpendicular direction', function() {
         gameCore.playerAdd(player);
@@ -373,13 +386,15 @@ describe('GameCore.playerUpdateAttributes', function() {
     it('requires valid direction if provided', function() {
         gameCore.playerAdd(player);
         expect(function() { gameCore.playerUpdateAttributes("asdf", 12, 12, null); })
-            .throw(Error, 'Parameter \'direction\' required of type number');
+            .throw(Error, 'Parameter \'direction\' required of type number in Utility.directions');
         expect(function() { gameCore.playerUpdateAttributes("asdf", 12, 12, []); })
-            .throw(Error, 'Parameter \'direction\' required of type number');
+            .throw(Error, 'Parameter \'direction\' required of type number in Utility.directions');
         expect(function() { gameCore.playerUpdateAttributes("asdf", 12, 12, ''); })
-            .throw(Error, 'Parameter \'direction\' required of type number');
+            .throw(Error, 'Parameter \'direction\' required of type number in Utility.directions');
         expect(function() { gameCore.playerUpdateAttributes("asdf", 12, 12, "asdf"); })
-            .throw(Error, 'Parameter \'direction\' required of type number');
+            .throw(Error, 'Parameter \'direction\' required of type number in Utility.directions');
+        expect(function() { gameCore.playerUpdateAttributes("asdf", 12, 12, 0b11); })
+            .throw(Error, 'Parameter \'direction\' required of type number in Utility.directions');
     });
     it('requires valid x', function() {
         gameCore.playerAdd(player);
