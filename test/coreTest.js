@@ -225,7 +225,15 @@ describe('GameCore.playerUpdate', function() {
         expect(function() { gameCore.playerUpdate(player.id, "1"); })
             .throw(Error, 'Parameter \'delta\' required to be positive');
     });
-    it('applies velocity based on delta');
+    it('applies velocity based on delta', function() {
+        gameCore.playerAdd(player);
+        player.segments[0].direction = Utility.DIRECTION_EAST;
+        gameCore.playerUpdate("asdf", 100);
+        expect(player.segments[0].x).equal(8.5);
+        player.segments[0].direction = Utility.DIRECTION_SOUTH;
+        gameCore.playerUpdate("asdf", 100);
+        expect(player.segments[0].y).equal(8.5);
+    });
     it('advances segment past starting location', function() {
         gameCore.playerAdd(player);
         for (let d = 0; d < Utility.directions.length; d++) {
@@ -241,18 +249,31 @@ describe('GameCore.playerUpdate', function() {
     });
     it('does not move player outside board', function() {
         gameCore.playerAdd(player);
-        for (let d = 0; d < Utility.directions.length; d++) {
-            player.segments[0].direction = Utility.directions[d];
-            gameCore.playerUpdate(player.id, 1000);
-            expect(player.segments[0].x).least(0);
-            expect(player.segments[0].y).least(0);
-            expect(player.segments[0].x).most(gameCore.width);
-            expect(player.segments[0].y).most(gameCore.height);
-        }
+        player.segments[0].x = 11;
+        gameCore.playerUpdate("asdf", 100);
+        expect(player.segments[0].x).most(gameCore.width);
     });
-    it('kills player moving into walls');
-    it('moves each segment in their direction');
-    it('turns each segment at waypoint');
+    it('kills player moving into walls', function() {
+        gameCore.playerAdd(player);
+        player.segments[0].x = 11;
+        gameCore.playerUpdate("asdf", 100);
+        expect(gameCore.players).not.property('asdf');
+    });
+    it('moves each segment in their direction', function() {
+        gameCore.playerAdd(player);
+        player.segmentAdd();
+        expect(function() { gameCore.playerUpdate("asdf", 100); })
+            .change(player.segments[1], 'x');
+    });
+    it('turns each segment at waypoint', function() {
+        gameCore.playerAdd(player);
+        player.segments[0].size = 2;
+        player.segmentAdd(undefined, undefined, undefined, 2);
+        player.segments[0].direction = Utility.DIRECTION_SOUTH;
+        player.segments[1].waypoints.push({x: 6, y: 6, direction: Utility.DIRECTION_SOUTH});
+        expect(function() { gameCore.playerUpdate("asdf", 100); })
+            .change(player.segments[1], 'direction');
+    });
 });
 
 describe('GameCore.playerUpdateVelocity', function() {

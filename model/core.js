@@ -63,6 +63,9 @@ GameCore.prototype.playerUpdateEntity = function(player) {
 
 GameCore.prototype.playerUpdate = function(id, delta) {
     // TODO: pass in game area (640 x 640)
+    if (typeof delta !== "number" || delta <= 0) {
+        throw new Error('Parameter \'delta\' required to be positive');
+    }
     let p = this.players[id];
     for (let i = 0, length = p.segments.length; i < length; i++) {
         let s = p.segments[i];
