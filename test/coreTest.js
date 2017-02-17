@@ -205,10 +205,12 @@ describe('GameCore.playerUpdateEntity', function() {
 
 describe('GameCore.playerUpdate', function() {
     let gameCore = null,
-        player = null;
+        player = null,
+        fruit = null;
     beforeEach(function() {
         gameCore = new c(12, 12);
         player = new Player("asdf", 6, 6);
+        fruit = new Fruit("zxcv", 7, 6);
     });
     it('requires positive delta', function() {
         gameCore.playerAdd(player);
@@ -273,6 +275,20 @@ describe('GameCore.playerUpdate', function() {
         player.segments[1].waypoints.push({x: 6, y: 6, direction: Utility.DIRECTION_SOUTH});
         expect(function() { gameCore.playerUpdate("asdf", 100); })
             .change(player.segments[1], 'direction');
+    });
+    it('fruit is removed upon collision', function() {
+        gameCore.playerAdd(player);
+        gameCore.fruitAdd(fruit);
+        player.segments[0].direction = Utility.DIRECTION_EAST;
+        gameCore.playerUpdate("asdf", 100);
+        expect(gameCore.fruits).not.property("zxcv");
+    });
+    it('collecting fruit increases segment length', function() {
+        gameCore.playerAdd(player);
+        gameCore.fruitAdd(fruit);
+        player.segments[0].direction = Utility.DIRECTION_EAST;
+        gameCore.playerUpdate("asdf", 100);
+        expect(player).property("segments").lengthOf(2);
     });
 });
 
@@ -539,6 +555,7 @@ describe('GameCore.fruitCreate', function() {
         expect(gameCore.fruitCreate("number1"))
             .instanceof(Fruit);
     });
+    it('does not create on existing fruit or snake');
 });
 
 describe('GameCore.fruitAdd', function() {

@@ -89,6 +89,21 @@ GameCore.prototype.playerUpdate = function(id, delta) {
             s.direction = Utility.directionReverse[s.direction];
         }
 
+        for (let f = 0; f < this.fruits.length; f++) {
+            let fruit = this.fruits[f];
+            if (    (
+                        fruit.x - fruit.radius <= x <= fruit.x + fruit.radius ||
+                        fruit.x - fruit.radius <= x + s.size <= fruit.x + fruit.radius
+                    ) &&
+                    (
+                        fruit.y - fruit.radius <= y <= fruit.y + fruit.radius ||
+                        fruit.y - fruit.radius <= y + s.size <= fruit.y + fruit.radius
+                    )
+            ) {
+                this.fruitDelete(fruit.id);
+            }
+        }
+
         s.x = x;
         s.y = y;
         if (s.waypoints.length) {
