@@ -91,19 +91,17 @@ GameCore.prototype.playerUpdate = function(id, delta) {
 
         for (let f = 0; f < this.fruits.length; f++) {
             let fruit = this.fruits[f];
-            if (    (
-                        fruit.x - fruit.radius <= x <= fruit.x + fruit.radius ||
-                        fruit.x - fruit.radius <= x + s.size <= fruit.x + fruit.radius
-                    ) &&
-                    (
-                        fruit.y - fruit.radius <= y <= fruit.y + fruit.radius ||
-                        fruit.y - fruit.radius <= y + s.size <= fruit.y + fruit.radius
-                    )
-            ) {
+            if (this.checkRectangularCollision(
+                [x, x + s.size],
+                [y, y + s.size],
+                [fruit.x - fruit.radius, fruit.x + fruit.radius],
+                [fruit.y - fruit.radius, fruit.y + fruit.radius]
+            )) {
                 this.fruitDelete(fruit.id);
+                f--;
             }
         }
-
+        
         s.x = x;
         s.y = y;
         if (s.waypoints.length) {
@@ -238,6 +236,40 @@ GameCore.prototype.fruitList = function() {
     return Object.values ?
         Object.values(fruits) :
         Object.keys(fruits).map(function(key){ return fruits[key]; });
+};
+
+GameCore.prototype.checkRectangularCollision = function(aX, aY, bX, bY) {
+    // takes arrays of min max coordinates and returns true or false
+    let coords = [aX, aY, bX, bY];
+    for (let c = 0; c < coords.length; c++) {
+        if (
+            Array.isArray(coords[c]) === false ||
+            coords[c].length !== 2 ||
+            typeof coords[c][0] !== "number" ||
+            typeof coords[c][1] !== "number" ||
+            coords[c][0] >= coords[c][1]
+        ) {
+            throw new Error('Requires a valid range of numbers');
+        }
+    }
+    let collisionDetected = false;
+    for (let x = aX[0]; x <= aX[1]; x++) {
+        if (bX[0] <= x && x <= bX[1]) {
+            collisionDetected = true;
+            break;
+        }
+    }
+    if (collisionDetected) {
+        for (let y = aY[0]; y <= aY[1]; y++) {
+            if (bY[0] <= y && y <= bY[1]) {
+                collisionDetected = true;
+                break;
+            } else {
+                collisionDetected = false;
+            }
+        }
+    }
+    return collisionDetected;
 };
 
 module.exports = GameCore;
