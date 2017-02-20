@@ -718,13 +718,9 @@ describe('GameCore.fruitList', function() {
 });
 
 describe('GameCore.checkRectangularCollision', function() {
-    let gameCore = null,
-        player = null,
-        fruit = null;
+    let gameCore = null;
     beforeEach(function() {
         gameCore = new c(12, 12);
-        player = new Player("asdf", 6, 6);
-        fruit = new Fruit("zxcv", 7, 6);
     });
     it('requires valid range of numbers', function() {
         expect(function() { gameCore.checkRectangularCollision(); })

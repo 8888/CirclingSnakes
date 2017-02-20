@@ -88,8 +88,7 @@ GameCore.prototype.playerUpdate = function(id, delta) {
             x = 0 - x;
             s.direction = Utility.directionReverse[s.direction];
         }
-
-        for (let f = 0; f < this.fruits.length; f++) {
+        for (let f in this.fruits) {
             let fruit = this.fruits[f];
             if (this.checkRectangularCollision(
                 [x, x + s.size],
@@ -98,7 +97,7 @@ GameCore.prototype.playerUpdate = function(id, delta) {
                 [fruit.y - fruit.radius, fruit.y + fruit.radius]
             )) {
                 this.fruitDelete(fruit.id);
-                f--;
+                p.segmentAdd();
             }
         }
         
