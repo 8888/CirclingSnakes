@@ -91,10 +91,8 @@ GameCore.prototype.playerUpdate = function(id, delta) {
         for (let f in this.fruits) {
             let fruit = this.fruits[f];
             if (this.checkRectangularCollision(
-                [x, x + s.size],
-                [y, y + s.size],
-                [fruit.x - fruit.radius, fruit.x + fruit.radius],
-                [fruit.y - fruit.radius, fruit.y + fruit.radius]
+                {x: x, y: y, width: s.size, height: s.size},
+                {x: fruit.x - fruit.radius, y: fruit.y - fruit.radius, width: fruit.x + fruit.radius, height: fruit.y + fruit.radius}
             )) {
                 this.fruitDelete(fruit.id);
                 p.segmentAdd();
@@ -237,38 +235,18 @@ GameCore.prototype.fruitList = function() {
         Object.keys(fruits).map(function(key){ return fruits[key]; });
 };
 
-GameCore.prototype.checkRectangularCollision = function(aX, aY, bX, bY) {
-    // takes arrays of min max coordinates and returns true or false
-    let coords = [aX, aY, bX, bY];
-    for (let c = 0; c < coords.length; c++) {
-        if (
-            Array.isArray(coords[c]) === false ||
-            coords[c].length !== 2 ||
-            typeof coords[c][0] !== "number" ||
-            typeof coords[c][1] !== "number" ||
-            coords[c][0] >= coords[c][1]
-        ) {
-            throw new Error('Requires a valid range of numbers');
-        }
+GameCore.prototype.checkRectangularCollision = function(rectA, rectB) {
+    // takes objects {x, y, width, height}
+    if (
+        rectA.x < rectB.x + rectB.width &&
+        rectA.x + rectA.width > rectB.x &&
+        rectA.y < rectB.y + rectB.height &&
+        rectA.y + rectA.height > rectB.y
+    ) {
+        return true;
+    } else {
+        return false;
     }
-    let collisionDetected = false;
-    for (let x = aX[0]; x <= aX[1]; x++) {
-        if (bX[0] <= x && x <= bX[1]) {
-            collisionDetected = true;
-            break;
-        }
-    }
-    if (collisionDetected) {
-        for (let y = aY[0]; y <= aY[1]; y++) {
-            if (bY[0] <= y && y <= bY[1]) {
-                collisionDetected = true;
-                break;
-            } else {
-                collisionDetected = false;
-            }
-        }
-    }
-    return collisionDetected;
-};
+}
 
 module.exports = GameCore;

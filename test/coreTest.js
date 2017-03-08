@@ -722,106 +722,14 @@ describe('GameCore.checkRectangularCollision', function() {
     beforeEach(function() {
         gameCore = new c(12, 12);
     });
-    it('requires valid range of numbers', function() {
-        expect(function() { gameCore.checkRectangularCollision(); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision(null); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision(undefined); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([]); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision(''); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision(1234); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision({}); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([0]); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([0,0]); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([10,0]); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([1,2,3]); })
-            .throw(Error, 'Requires a valid range of numbers');
-
-        expect(function() { gameCore.checkRectangularCollision([5,10]); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], null); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], undefined); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], []); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], ''); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], 1234); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], {}); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [0]); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [0,0]); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [10,0]); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [1,2,3]); })
-            .throw(Error, 'Requires a valid range of numbers');
-
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10]); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], null); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], undefined); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], []); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], ''); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], 1234); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], {}); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], [0]); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], [0,0]); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], [10,0]); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], [1,2,3]); })
-            .throw(Error, 'Requires a valid range of numbers');
-
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], [5,10]); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], [5,10], null); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], [5,10], undefined); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], [5,10], []); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], [5,10], ''); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], [5,10], 1234); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], [5,10], {}); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], [5,10], [0]); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], [5,10], [0,0]); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], [5,10], [10,0]); })
-            .throw(Error, 'Requires a valid range of numbers');
-        expect(function() { gameCore.checkRectangularCollision([5,10], [5,10], [5,10], [1,2,3]); })
-            .throw(Error, 'Requires a valid range of numbers');
-    });
     it('detects collision', function() {
-        expect(gameCore.checkRectangularCollision([10,20], [10,20], [10,20], [10,20])).equal(true);                
-        expect(gameCore.checkRectangularCollision([10,20], [10,20], [12,16], [12, 16])).equal(true);        
-        expect(gameCore.checkRectangularCollision([12,16], [12, 16], [10,20], [10,20])).equal(true);        
-        expect(gameCore.checkRectangularCollision([10,20], [10,20], [8,12], [8, 12])).equal(true);
-        expect(gameCore.checkRectangularCollision([8.5, 28.5], [6, 26], [-3, 17], [-4, 16])).equal(true);
-        expect(gameCore.checkRectangularCollision([10,20], [10,20], [2,5], [2,5])).equal(false);              
-        expect(gameCore.checkRectangularCollision([2,5], [2,5], [10,20], [10,20])).equal(false);
+        expect(gameCore.checkRectangularCollision({x: 10, y: 10, width: 10, height: 10}, {x: 10, y: 10, width: 10, height: 10})).equal(true);
+        expect(gameCore.checkRectangularCollision({x: 10, y: 10, width: 10, height: 10}, {x: 12, y: 12, width: 4, height: 4})).equal(true);
+        expect(gameCore.checkRectangularCollision({x: 12, y: 12, width: 4, height: 4}, {x: 10, y: 10, width: 10, height: 10})).equal(true);
+        expect(gameCore.checkRectangularCollision({x: 10, y: 10, width: 10, height: 10}, {x: 8, y: 8, width: 4, height: 4})).equal(true);
+        expect(gameCore.checkRectangularCollision({x: 8.5, y: 6, width: 20, height: 20}, {x: -3, y: -4, width: 20, height: 20})).equal(true);
+        expect(gameCore.checkRectangularCollision({x: 10, y: 10, width: 10, height: 10}, {x: 2, y: 2, width: 3, height: 3})).equal(false);
+        expect(gameCore.checkRectangularCollision({x: 2, y: 2, width: 3, height: 3}, {x: 10, y: 10, width: 10, height: 10})).equal(false);
+        expect(gameCore.checkRectangularCollision({x: 2, y: 2, width: 3, height: 3}, {x: 5.1, y: 5.1, width: 10, height: 10})).equal(false);
     });
 });
