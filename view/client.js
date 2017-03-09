@@ -137,6 +137,10 @@ function init() {
 function update(delta) {
     for (let user in game.players) {
         game.playerUpdate(user, delta);
+        if (game.fruits) {
+            game.checkFruitCollision(game.players[user]);
+        }
+        game.checkWallCollision(game.players[user]);
     }
 }
 

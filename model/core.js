@@ -19,6 +19,7 @@ var GameCore = function(width, height) {
     }
     this.width = width;
     this.height = height;
+    this.wallsKill = false;
     // Fruit spawning
     this.fruits = {};
     this.fruitMax = 5; // TODO: 5 is arbitrary
@@ -71,34 +72,7 @@ GameCore.prototype.playerUpdate = function(id, delta) {
         let s = p.segments[i];
         let v = Utility.directionVelocity[s.direction];
         let x = s.x + v[0] * delta / 1000,
-            y = s.y + v[1] * delta / 1000;
-
-        if (y > this.height) {
-            y = this.height - (y - this.height);
-            s.direction = Utility.directionReverse[s.direction];
-        } else if (y < 0) {
-            y = 0 - y;
-            s.direction = Utility.directionReverse[s.direction];
-        }
-
-        if (x > this.width) {
-            x = this.width - (x - this.width);
-            s.direction = Utility.directionReverse[s.direction];
-        } else if (x < 0) {
-            x = 0 - x;
-            s.direction = Utility.directionReverse[s.direction];
-        }
-        for (let f in this.fruits) {
-            let fruit = this.fruits[f];
-            if (this.checkRectangularCollision(
-                {x: x, y: y, width: s.size, height: s.size},
-                {x: fruit.x - fruit.radius, y: fruit.y - fruit.radius, width: fruit.x + fruit.radius, height: fruit.y + fruit.radius}
-            )) {
-                this.fruitDelete(fruit.id);
-                p.segmentAdd();
-            }
-        }
-        
+            y = s.y + v[1] * delta / 1000;                   
         s.x = x;
         s.y = y;
         if (s.waypoints.length) {
@@ -235,18 +209,51 @@ GameCore.prototype.fruitList = function() {
         Object.keys(fruits).map(function(key){ return fruits[key]; });
 };
 
-GameCore.prototype.checkRectangularCollision = function(rectA, rectB) {
-    // takes objects {x, y, width, height}
-    if (
-        rectA.x < rectB.x + rectB.width &&
-        rectA.x + rectA.width > rectB.x &&
-        rectA.y < rectB.y + rectB.height &&
-        rectA.y + rectA.height > rectB.y
-    ) {
-        return true;
-    } else {
-        return false;
+GameCore.prototype.checkFruitCollision = function(player) {
+    let x = player.segments[0].x,
+        y = player.segments[0].y,
+        size = player.segments[0].size;
+    for (let f in this.fruits) {
+        let fruit = this.fruits[f];
+        if (Utility.checkRectangularCollision(
+            {x: x, y: y, width: size, height: size},
+            {x: fruit.x - fruit.radius, y: fruit.y - fruit.radius, width: fruit.radius * 2, height: fruit.radius * 2}
+        )) {
+            this.fruitDelete(fruit.id);
+            player.segmentAdd();
+        }
     }
-}
+};
+
+GameCore.prototype.checkWallCollision = function(player) {
+    let segmentsToCheck = player.segments.length;
+    if (this.wallsKill) {
+        segmentsToCheck = 1;
+    }
+    for (let i = 0; i < segmentsToCheck; i++) {
+        let s = player.segments[i];
+        if (this.wallsKill) {
+            if (s.y > this.height || s.y < 0 || s.x > this.width || s.x < 0) {
+                this.playerDelete(player.id);
+            }
+        } else {
+            if (s.y > this.height) {
+                s.y = this.height - (s.y - this.height);
+                s.direction = Utility.directionReverse[s.direction];
+            } else if (s.y < 0) {
+                s.y = 0 - s.y;
+                s.direction = Utility.directionReverse[s.direction];
+            }
+
+            if (s.x > this.width) {
+                s.x = this.width - (s.x - this.width);
+                s.direction = Utility.directionReverse[s.direction];
+            } else if (s.x < 0) {
+                s.x = 0 - s.x;
+                s.direction = Utility.directionReverse[s.direction];
+            }
+        }
+    }
+};
 
 module.exports = GameCore;

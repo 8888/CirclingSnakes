@@ -26,4 +26,18 @@ Utility.directions = [Utility.DIRECTION_NORTH, Utility.DIRECTION_EAST, Utility.D
 Utility.directionsEW = [Utility.DIRECTION_EAST, Utility.DIRECTION_WEST];
 Utility.directionsNS = [Utility.DIRECTION_NORTH, Utility.DIRECTION_SOUTH];
 
+Utility.checkRectangularCollision = function(rectA, rectB) {
+    // takes objects {x, y, width, height}
+    if (
+        rectA.x < rectB.x + rectB.width &&
+        rectA.x + rectA.width > rectB.x &&
+        rectA.y < rectB.y + rectB.height &&
+        rectA.y + rectA.height > rectB.y
+    ) {
+        return true;
+    } else {
+        return false;
+    }
+};
+
 module.exports = Utility;
