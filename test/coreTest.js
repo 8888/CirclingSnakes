@@ -249,18 +249,6 @@ describe('GameCore.playerUpdate', function() {
             }
         }
     });
-    it('does not move player outside board', function() {
-        gameCore.playerAdd(player);
-        player.segments[0].x = 11;
-        gameCore.playerUpdate("asdf", 100);
-        expect(player.segments[0].x).most(gameCore.width);
-    });
-    it('kills player moving into walls', function() {
-        gameCore.playerAdd(player);
-        player.segments[0].x = 11;
-        gameCore.playerUpdate("asdf", 100);
-        expect(gameCore.players).not.property('asdf');
-    });
     it('moves each segment in their direction', function() {
         gameCore.playerAdd(player);
         player.segmentAdd();
@@ -723,5 +711,29 @@ describe('GameCore.checkFruitCollision', function() {
         gameCore.fruitAdd(fruit);
         gameCore.checkFruitCollision(player);
         expect(player).property("segments").lengthOf(2);
+    });
+});
+
+describe('GameCore.checkWallCollision', function() {
+    let gameCore = null,
+        player = null;
+    beforeEach(function() {
+        gameCore = new c(12, 12);
+        player = new Player("asdf", 6, 6);
+    });
+    it('kills player moving into walls', function() {
+        gameCore.wallsKill = true;
+        gameCore.playerAdd(player);
+        player.segments[0].x = 12.1;
+        gameCore.checkWallCollision(player);
+        expect(gameCore.players).not.property('asdf');
+    });
+    it('player bounces off of walls', function() {
+        gameCore.wallsKill = false;
+        gameCore.playerAdd(player);
+        player.segments[0].direction = Utility.DIRECTION_EAST;
+        player.segments[0].x = 12.1;
+        gameCore.checkWallCollision(player);
+        expect(player.segments[0].direction).equal(Utility.DIRECTION_WEST);
     });
 });

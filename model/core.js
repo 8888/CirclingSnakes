@@ -19,6 +19,7 @@ var GameCore = function(width, height) {
     }
     this.width = width;
     this.height = height;
+    this.wallsKill = false;
     // Fruit spawning
     this.fruits = {};
     this.fruitMax = 5; // TODO: 5 is arbitrary
@@ -71,25 +72,7 @@ GameCore.prototype.playerUpdate = function(id, delta) {
         let s = p.segments[i];
         let v = Utility.directionVelocity[s.direction];
         let x = s.x + v[0] * delta / 1000,
-            y = s.y + v[1] * delta / 1000;
-
-        if (y > this.height) {
-            y = this.height - (y - this.height);
-            s.direction = Utility.directionReverse[s.direction];
-        } else if (y < 0) {
-            y = 0 - y;
-            s.direction = Utility.directionReverse[s.direction];
-        }
-
-        // TODO: bouncing off the walls will be removed and player will be killed
-        if (x > this.width) {
-            x = this.width - (x - this.width);
-            s.direction = Utility.directionReverse[s.direction];
-        } else if (x < 0) {
-            x = 0 - x;
-            s.direction = Utility.directionReverse[s.direction];
-        }
-        
+            y = s.y + v[1] * delta / 1000;                   
         s.x = x;
         s.y = y;
         if (s.waypoints.length) {
@@ -238,6 +221,37 @@ GameCore.prototype.checkFruitCollision = function(player) {
         )) {
             this.fruitDelete(fruit.id);
             player.segmentAdd();
+        }
+    }
+};
+
+GameCore.prototype.checkWallCollision = function(player) {
+    let segmentsToCheck = player.segments.length;
+    if (this.wallsKill) {
+        segmentsToCheck = 1;
+    }
+    for (let i = 0; i < segmentsToCheck; i++) {
+        let s = player.segments[i];
+        if (this.wallsKill) {
+            if (s.y > this.height || s.y < 0 || s.x > this.width || s.x < 0) {
+                this.playerDelete(player.id);
+            }
+        } else {
+            if (s.y > this.height) {
+                s.y = this.height - (s.y - this.height);
+                s.direction = Utility.directionReverse[s.direction];
+            } else if (s.y < 0) {
+                s.y = 0 - s.y;
+                s.direction = Utility.directionReverse[s.direction];
+            }
+
+            if (s.x > this.width) {
+                s.x = this.width - (s.x - this.width);
+                s.direction = Utility.directionReverse[s.direction];
+            } else if (s.x < 0) {
+                s.x = 0 - s.x;
+                s.direction = Utility.directionReverse[s.direction];
+            }
         }
     }
 };

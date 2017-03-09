@@ -80,6 +80,7 @@ setInterval(function(){
         if (game_server.fruits) {
             game_server.checkFruitCollision(p);
         }
+        game_server.checkWallCollision(p);
         p.timeUpdated = process.hrtime();
     }
 }, 20);

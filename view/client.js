@@ -140,6 +140,7 @@ function update(delta) {
         if (game.fruits) {
             game.checkFruitCollision(game.players[user]);
         }
+        game.checkWallCollision(game.players[user]);
     }
 }
 
