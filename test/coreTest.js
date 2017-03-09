@@ -276,20 +276,6 @@ describe('GameCore.playerUpdate', function() {
         expect(function() { gameCore.playerUpdate("asdf", 100); })
             .change(player.segments[1], 'direction');
     });
-    it('fruit is removed upon collision', function() {
-        gameCore.playerAdd(player);
-        gameCore.fruitAdd(fruit);
-        player.segments[0].direction = Utility.DIRECTION_EAST;
-        gameCore.playerUpdate("asdf", 100);
-        expect(gameCore.fruits).not.property("zxcv");
-    });
-    it('collecting fruit increases segment length', function() {
-        gameCore.playerAdd(player);
-        gameCore.fruitAdd(fruit);
-        player.segments[0].direction = Utility.DIRECTION_EAST;
-        gameCore.playerUpdate("asdf", 100);
-        expect(player).property("segments").lengthOf(2);
-    });
 });
 
 describe('GameCore.playerUpdateVelocity', function() {
@@ -717,19 +703,25 @@ describe('GameCore.fruitList', function() {
     });
 });
 
-describe('GameCore.checkRectangularCollision', function() {
-    let gameCore = null;
+describe('GameCore.checkFruitCollision', function() {
+    let gameCore = null,
+        player = null,
+        fruit = null;
     beforeEach(function() {
         gameCore = new c(12, 12);
+        player = new Player("asdf", 6, 6);
+        fruit = new Fruit("zxcv", 6, 6);
     });
-    it('detects collision', function() {
-        expect(gameCore.checkRectangularCollision({x: 10, y: 10, width: 10, height: 10}, {x: 10, y: 10, width: 10, height: 10})).equal(true);
-        expect(gameCore.checkRectangularCollision({x: 10, y: 10, width: 10, height: 10}, {x: 12, y: 12, width: 4, height: 4})).equal(true);
-        expect(gameCore.checkRectangularCollision({x: 12, y: 12, width: 4, height: 4}, {x: 10, y: 10, width: 10, height: 10})).equal(true);
-        expect(gameCore.checkRectangularCollision({x: 10, y: 10, width: 10, height: 10}, {x: 8, y: 8, width: 4, height: 4})).equal(true);
-        expect(gameCore.checkRectangularCollision({x: 8.5, y: 6, width: 20, height: 20}, {x: -3, y: -4, width: 20, height: 20})).equal(true);
-        expect(gameCore.checkRectangularCollision({x: 10, y: 10, width: 10, height: 10}, {x: 2, y: 2, width: 3, height: 3})).equal(false);
-        expect(gameCore.checkRectangularCollision({x: 2, y: 2, width: 3, height: 3}, {x: 10, y: 10, width: 10, height: 10})).equal(false);
-        expect(gameCore.checkRectangularCollision({x: 2, y: 2, width: 3, height: 3}, {x: 5.1, y: 5.1, width: 10, height: 10})).equal(false);
+    it('removes fruit upon collision', function() {
+        gameCore.playerAdd(player);
+        gameCore.fruitAdd(fruit);
+        gameCore.checkFruitCollision(player);
+        expect(gameCore.fruits).not.property("zxcv");
+    });
+    it('collecting fruit increases segment length', function() {
+        gameCore.playerAdd(player);
+        gameCore.fruitAdd(fruit);
+        gameCore.checkFruitCollision(player);
+        expect(player).property("segments").lengthOf(2);
     });
 });

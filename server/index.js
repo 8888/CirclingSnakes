@@ -77,9 +77,13 @@ setInterval(function(){
         } else {
             game_server.playerUpdate(playerId, gameDelta);
         }
+        if (game_server.fruits) {
+            game_server.checkFruitCollision(p);
+        }
         p.timeUpdated = process.hrtime();
     }
 }, 20);
+
 setInterval(function() {
     io.emit('playersUpdate', { 
         players: game_server.playersList()

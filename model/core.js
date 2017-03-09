@@ -81,22 +81,13 @@ GameCore.prototype.playerUpdate = function(id, delta) {
             s.direction = Utility.directionReverse[s.direction];
         }
 
+        // TODO: bouncing off the walls will be removed and player will be killed
         if (x > this.width) {
             x = this.width - (x - this.width);
             s.direction = Utility.directionReverse[s.direction];
         } else if (x < 0) {
             x = 0 - x;
             s.direction = Utility.directionReverse[s.direction];
-        }
-        for (let f in this.fruits) {
-            let fruit = this.fruits[f];
-            if (this.checkRectangularCollision(
-                {x: x, y: y, width: s.size, height: s.size},
-                {x: fruit.x - fruit.radius, y: fruit.y - fruit.radius, width: fruit.x + fruit.radius, height: fruit.y + fruit.radius}
-            )) {
-                this.fruitDelete(fruit.id);
-                p.segmentAdd();
-            }
         }
         
         s.x = x;
@@ -235,18 +226,20 @@ GameCore.prototype.fruitList = function() {
         Object.keys(fruits).map(function(key){ return fruits[key]; });
 };
 
-GameCore.prototype.checkRectangularCollision = function(rectA, rectB) {
-    // takes objects {x, y, width, height}
-    if (
-        rectA.x < rectB.x + rectB.width &&
-        rectA.x + rectA.width > rectB.x &&
-        rectA.y < rectB.y + rectB.height &&
-        rectA.y + rectA.height > rectB.y
-    ) {
-        return true;
-    } else {
-        return false;
+GameCore.prototype.checkFruitCollision = function(player) {
+    let x = player.segments[0].x,
+        y = player.segments[0].y,
+        size = player.segments[0].size;
+    for (let f in this.fruits) {
+        let fruit = this.fruits[f];
+        if (Utility.checkRectangularCollision(
+            {x: x, y: y, width: size, height: size},
+            {x: fruit.x - fruit.radius, y: fruit.y - fruit.radius, width: fruit.radius * 2, height: fruit.radius * 2}
+        )) {
+            this.fruitDelete(fruit.id);
+            player.segmentAdd();
+        }
     }
-}
+};
 
 module.exports = GameCore;
