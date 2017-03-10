@@ -19,7 +19,6 @@ var GameCore = function(width, height) {
     }
     this.width = width;
     this.height = height;
-    this.wallsKill = false;
     // Fruit spawning
     this.fruits = {};
     this.fruitMax = 5; // TODO: 5 is arbitrary
@@ -210,6 +209,7 @@ GameCore.prototype.fruitList = function() {
 };
 
 GameCore.prototype.checkFruitCollision = function(player) {
+    let fruitToDelete = [];
     let x = player.segments[0].x,
         y = player.segments[0].y,
         size = player.segments[0].size;
@@ -219,22 +219,22 @@ GameCore.prototype.checkFruitCollision = function(player) {
             {x: x, y: y, width: size, height: size},
             {x: fruit.x - fruit.radius, y: fruit.y - fruit.radius, width: fruit.radius * 2, height: fruit.radius * 2}
         )) {
-            this.fruitDelete(fruit.id);
-            player.segmentAdd();
+            fruitToDelete.push(fruit.id);
         }
     }
+    return fruitToDelete;
 };
 
 GameCore.prototype.checkWallCollision = function(player) {
     let segmentsToCheck = player.segments.length;
-    if (this.wallsKill) {
+    if (player.wallsKill) {
         segmentsToCheck = 1;
     }
     for (let i = 0; i < segmentsToCheck; i++) {
         let s = player.segments[i];
-        if (this.wallsKill) {
+        if (player.wallsKill) {
             if (s.y > this.height || s.y < 0 || s.x > this.width || s.x < 0) {
-                this.playerDelete(player.id);
+                return true; //player.kill();
             }
         } else {
             if (s.y > this.height) {
@@ -252,6 +252,31 @@ GameCore.prototype.checkWallCollision = function(player) {
                 s.x = 0 - s.x;
                 s.direction = Utility.directionReverse[s.direction];
             }
+        }
+    }
+};
+
+GameCore.prototype.checkSnakeCollision = function(player) {
+    for (let p in this.players) {
+        let enemy = this.players[p];
+        if (enemy != player && player.enemyCollisionKills) {
+            for (let s = 0; s < enemy.segments.length; s++) {
+                if (Utility.checkRectangularCollision(
+                    {x: player.segments[0].x, y: player.segments[0].y, width: player.segments[0].size, height: player.segments[0].size},
+                    {x: enemy.segments[s].x, y: enemy.segments[s].y, width: enemy.segments[s].size, height: enemy.segments[s].size}
+                )) {
+                    player.kill();
+                    if (s === 0) {
+                        enemy.kill();
+                    }
+                    break;
+                }
+            }
+            if (!player.isAlive) {
+                break;
+            }
+        } else if (enemy == player && player.selfCollisionKills) {
+            //TODO: Add self collision
         }
     }
 };

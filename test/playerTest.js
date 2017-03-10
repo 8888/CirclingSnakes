@@ -119,3 +119,14 @@ describe('Player.segmentAdd', function() {
             .equals(s1.direction);
     });
 });
+
+describe('Player.kill', function() {
+    let player = null;
+    beforeEach(function() {
+        player = new p("asdf", 12, 12);
+    });
+    it('kills player', function() {
+        player.kill();
+        expect(player.isAlive).equal(false);
+    });
+});

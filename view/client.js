@@ -104,6 +104,10 @@ socket.on('playersUpdate', function(data) {
         }
     }
 });
+socket.on('playerKilled', function(data) {
+    /* { playerId: string } */
+    game.players[data.playerId].isAlive = false;
+});
 
 socket.on('fruitAdd', function(data) {
     /* { fruit: object } */
@@ -118,6 +122,10 @@ socket.on('fruitUpdate', function(data) {
             game.fruitAdd(f);
         }
     }
+});
+socket.on('fruitDelete', function(data) {
+    /* { fruitId: string } */
+    game.fruitDelete(data.fruitId);
 });
 
 // Development features
@@ -136,11 +144,16 @@ function init() {
 
 function update(delta) {
     for (let user in game.players) {
-        game.playerUpdate(user, delta);
-        if (game.fruits) {
-            game.checkFruitCollision(game.players[user]);
+        if (game.players[user].isAlive) {
+            game.playerUpdate(user, delta);
+            /*
+            if (game.fruits) {
+                game.checkFruitCollision(game.players[user]);
+            }
+            */
+            game.checkWallCollision(game.players[user]);
+            game.checkSnakeCollision(game.players[user]);
         }
-        game.checkWallCollision(game.players[user]);
     }
 }
 
@@ -150,22 +163,24 @@ function display() {
     ctx.font = "18px New Courier";
     for (let user in game.players) {
         let p = game.players[user];
-        for (let i = 0; i < p.segments.length; i++) {
-            let s = p.segments[i];
-            if (Math.trunc(s.y) == 320) {
-                ctx.fillStyle = "rgba(250, 10, 10, 0.9)";
-            } else if(p.id == playerId) {
-                ctx.fillStyle = "rgba(130, 65, 160, 0.8)";
-            } else {
-                ctx.fillStyle = "rgba(250, 250, 250, 0.65)";
+        if (p.isAlive) {
+            for (let i = 0; i < p.segments.length; i++) {
+                let s = p.segments[i];
+                if (Math.trunc(s.y) == 320) {
+                    ctx.fillStyle = "rgba(250, 10, 10, 0.9)";
+                } else if(p.id == playerId) {
+                    ctx.fillStyle = "rgba(130, 65, 160, 0.8)";
+                } else {
+                    ctx.fillStyle = "rgba(250, 250, 250, 0.65)";
+                }
+                ctx.fillRect(s.x, s.y, s.size, s.size);
+                ctx.fillStyle = "rgba(10, 10, 10, 0.8)";
+                ctx.fillText(
+                    (i ? i : p.id.slice(0,6)) + "(" + Math.trunc(s.x) + ", " + Math.trunc(s.y) + ")", 
+                    s.x, s.y
+                );
             }
-            ctx.fillRect(s.x, s.y, s.size, s.size);
-            ctx.fillStyle = "rgba(10, 10, 10, 0.8)";
-            ctx.fillText(
-                (i ? i : p.id.slice(0,6)) + "(" + Math.trunc(s.x) + ", " + Math.trunc(s.y) + ")", 
-                s.x, s.y
-            );
-        }   
+        }
     }
 
     ctx.fillStyle = "rgba(250, 10, 10, 0.9)";
