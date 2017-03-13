@@ -702,21 +702,13 @@ describe('GameCore.checkFruitCollision', function() {
     beforeEach(function() {
         gameCore = new c(12, 12);
         player = new Player("asdf", 6, 6);
-        fruit = new Fruit("zxcv", 6, 6);
+        fruit = new Fruit("zxcv", 6, 6, 10);
     });
     it('returns fruit Id to be removed', function() {
         gameCore.playerAdd(player);
         gameCore.fruitAdd(fruit);
         expect(gameCore.checkFruitCollision(player)).include("zxcv");       
     });
-    /*
-    it('collecting fruit increases segment length', function() {
-        gameCore.playerAdd(player);
-        gameCore.fruitAdd(fruit);
-        gameCore.checkFruitCollision(player);
-        expect(player).property("segments").lengthOf(2);
-    });
-    */
 });
 
 describe('GameCore.checkWallCollision', function() {
@@ -759,17 +751,27 @@ describe('GameCore.checkSnakeCollision', function() {
         playerB.segments[0].y = 25;
         playerB.segments[0].direction = Utility.DIRECTION_NORTH;
         playerB.segmentAdd();
-        gameCore.checkSnakeCollision(playerA);
-        expect(playerA.isAlive).equal(false);
-        expect(playerB.isAlive).equal(true);
+        let playersToKill = gameCore.checkSnakeCollision(playerA);
+        expect(playersToKill).include(playerA);
+        expect(playersToKill).not.include(playerB);
     });
     it('kills both players from head on collision', function() {
         gameCore.playerAdd(playerA);
         gameCore.playerAdd(playerB);
         playerA.enemyCollisionKills = true;
         playerB.enemyCollisionKills = true;
-        gameCore.checkSnakeCollision(playerA);
-        expect(playerA.isAlive).equal(false);
-        expect(playerB.isAlive).equal(false);
-    });    
+        let playersToKill = gameCore.checkSnakeCollision(playerA);
+        expect(playersToKill).include(playerA);
+        expect(playersToKill).include(playerB);
+    });
+    it('kills a player colliding with itself', function() {
+        gameCore.playerAdd(playerA);
+        playerA.selfCollisionKills = true;
+        playerA.segments[0].direction = Utility.DIRECTION_SOUTH;
+        playerA.segmentAdd();
+        playerA.segmentAdd();
+        playerA.segments[0].y = 10;
+        let playersToKill = gameCore.checkSnakeCollision(playerA);
+        expect(playersToKill).include(playerA);
+    });
 });

@@ -8,7 +8,7 @@ describe('Fruit.constructor', function() {
     let fruit = null,
         fruitId = "adsf";
     beforeEach(function() {
-        fruit = new f(fruitId, 7, 7);
+        fruit = new f(fruitId, 7, 7, 10);
     });
 
     it('require valid id', function() {

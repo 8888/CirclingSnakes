@@ -1,7 +1,7 @@
 'use strict';
 
 class Fruit {
-    constructor(id, x, y) {
+    constructor(id, x, y, radius) {
         if (typeof id !== "string" || id.length === 0) {
             throw new Error('Parameter \'id\' required of type string');
         } else if (!Number.isFinite(x) || !Number.isFinite(y)) {
@@ -10,7 +10,7 @@ class Fruit {
         this.id = id;
         this.x = x;
         this.y = y;
-        this.radius = 10;
+        this.radius = radius;
     }
 }
 

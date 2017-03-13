@@ -32,11 +32,13 @@ io.on('connection', function(socket) {
         playerAdd(socket, id);
     });
     socket.on('playerTurn', function(playerId, direction) {
-        game_server.playerUpdateVelocity(playerId, 0, direction);
-        socket.broadcast.emit('playerTurn', {
-            playerId: playerId,
-            direction: direction
-        });
+        if (game_server.players[playerId].distanceUntilTurn <= 0) {
+            game_server.playerUpdateVelocity(playerId, 0, direction);
+            socket.broadcast.emit('playerTurn', {
+                playerId: playerId,
+                direction: direction
+            });
+        }
     });
 });
 
@@ -63,6 +65,7 @@ let fruitAdd = function(id) {
 };
 
 let checkCollisions = function(player) {
+    // Fruit collision
     if (game_server.fruits) {
         let fruit = game_server.checkFruitCollision(player);
         if (fruit) {
@@ -74,9 +77,18 @@ let checkCollisions = function(player) {
             }
         }
     }
+    // Wall collision
     if (game_server.checkWallCollision(player)) {   
         player.kill();
         io.emit('playerKilled', {playerId: player.id});
+    }
+    // Collision with other snakes
+    let collidedSnakes = game_server.checkSnakeCollision(player);
+    if (collidedSnakes) {
+        for (let p = 0; p < collidedSnakes.length; p++) {
+            collidedSnakes[p].kill();
+            io.emit('playerKilled', {playerId: collidedSnakes[p].id});
+        }
     }
 };
 
@@ -97,7 +109,6 @@ setInterval(function(){
                 game_server.playerUpdate(playerId, gameDelta);
             }
             checkCollisions(p);
-            game_server.checkSnakeCollision(p);
             p.timeUpdated = process.hrtime();
         }
     }

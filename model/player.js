@@ -11,8 +11,9 @@ class Player {
         this.segments = [];
         this.isAlive = true;
         this.wallsKill = true;
-        this.selfCollisionKills = false;
-        this.enemyCollisionKills = false;
+        this.selfCollisionKills = true;
+        this.enemyCollisionKills = true;
+        this.distanceUntilTurn = 0;
         if (Number.isFinite(x) && Number.isFinite(y)) {
             this.segmentAdd(x, y);
         }

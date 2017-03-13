@@ -47,8 +47,10 @@ socket.on('gameJoin', function(data) {
     }
 
     function playerUpdateVelocity(id, direction) {
-        game.playerUpdateVelocity(id, 0, direction);
-        socket.emit('playerTurn', id, direction);
+        if (game.players[id].distanceUntilTurn <= 0) {
+            game.playerUpdateVelocity(id, 0, direction);
+            socket.emit('playerTurn', id, direction);
+        }
     }
 
     for(let i = 0; i < data.fruits.length; i++) {
@@ -65,6 +67,11 @@ socket.on('gameJoin', function(data) {
 
 function playerFromData(playerData) {
     let p = new Player(playerData.id);
+    p.isAlive = playerData.isAlive;
+    p.wallsKill = playerData.wallsKill;
+    p.selfCollisionKills = playerData.selfCollisionKills;
+    p.enemyCollisionKills = playerData.enemyCollisionKills;
+    p.distanceUntilTurn = playerData.distanceUntilTurn;
     for (let i = 0; i < playerData.segments.length; i++) {
         let s = playerData.segments[i];
         p.segmentAdd(s.x, s.y,
@@ -78,7 +85,7 @@ function playerFromData(playerData) {
 }
 
 function fruitFromData(fruitData) {
-    let f = new Fruit(fruitData.id, fruitData.x, fruitData.y);
+    let f = new Fruit(fruitData.id, fruitData.x, fruitData.y, fruitData.radius);
     return f;
 }
 
