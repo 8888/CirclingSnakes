@@ -32,11 +32,13 @@ io.on('connection', function(socket) {
         playerAdd(socket, id);
     });
     socket.on('playerTurn', function(playerId, direction) {
-        game_server.playerUpdateVelocity(playerId, 0, direction);
-        socket.broadcast.emit('playerTurn', {
-            playerId: playerId,
-            direction: direction
-        });
+        if (game_server.players[playerId].distanceUntilTurn <= 0) {
+            game_server.playerUpdateVelocity(playerId, 0, direction);
+            socket.broadcast.emit('playerTurn', {
+                playerId: playerId,
+                direction: direction
+            });
+        }
     });
 });
 
@@ -62,6 +64,34 @@ let fruitAdd = function(id) {
     io.emit('fruitAdd', { fruit: fruit });
 };
 
+let checkCollisions = function(player) {
+    // Fruit collision
+    if (game_server.fruits) {
+        let fruit = game_server.checkFruitCollision(player);
+        if (fruit) {
+            for (let f = 0; f < fruit.length; f++) {
+                game_server.fruitDelete(fruit[f]);
+                io.emit('fruitDelete', {fruitId: fruit[f]});
+                player.segmentAdd();
+                io.emit('playersUpdate', {players: game_server.playersList()});
+            }
+        }
+    }
+    // Wall collision
+    if (game_server.checkWallCollision(player)) {   
+        player.kill();
+        io.emit('playerKilled', {playerId: player.id});
+    }
+    // Collision with other snakes
+    let collidedSnakes = game_server.checkSnakeCollision(player);
+    if (collidedSnakes) {
+        for (let p = 0; p < collidedSnakes.length; p++) {
+            collidedSnakes[p].kill();
+            io.emit('playerKilled', {playerId: collidedSnakes[p].id});
+        }
+    }
+};
+
 let gameUpdateTime = process.hrtime();
 setInterval(function(){
     gameUpdateTime = process.hrtime(gameUpdateTime);
@@ -70,18 +100,17 @@ setInterval(function(){
 
     for (let playerId in game_server.players) {
         let p = game_server.players[playerId];
-        if (p.timeUpdated){
-            let updateTime = process.hrtime(p.timeUpdated);
-            let addDelta = Math.round((updateTime[0]*1000) + (updateTime[1]/1000000));
-            game_server.playerUpdate(playerId, addDelta);
-        } else {
-            game_server.playerUpdate(playerId, gameDelta);
+        if (p.isAlive) {
+            if (p.timeUpdated){
+                let updateTime = process.hrtime(p.timeUpdated);
+                let addDelta = Math.round((updateTime[0]*1000) + (updateTime[1]/1000000));
+                game_server.playerUpdate(playerId, addDelta);
+            } else {
+                game_server.playerUpdate(playerId, gameDelta);
+            }
+            checkCollisions(p);
+            p.timeUpdated = process.hrtime();
         }
-        if (game_server.fruits) {
-            game_server.checkFruitCollision(p);
-        }
-        game_server.checkWallCollision(p);
-        p.timeUpdated = process.hrtime();
     }
 }, 20);
 

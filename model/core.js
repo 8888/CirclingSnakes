@@ -19,11 +19,11 @@ var GameCore = function(width, height) {
     }
     this.width = width;
     this.height = height;
-    this.wallsKill = false;
     // Fruit spawning
     this.fruits = {};
     this.fruitMax = 5; // TODO: 5 is arbitrary
     this.fruitSpawnInterval = 2000; // milliseconds
+    this.fruitRadius = 10;
 };
 
 GameCore.prototype.playerCreate = function(id) {
@@ -72,9 +72,12 @@ GameCore.prototype.playerUpdate = function(id, delta) {
         let s = p.segments[i];
         let v = Utility.directionVelocity[s.direction];
         let x = s.x + v[0] * delta / 1000,
-            y = s.y + v[1] * delta / 1000;                   
+            y = s.y + v[1] * delta / 1000;  
         s.x = x;
         s.y = y;
+        if ( i == 0 && p.distanceUntilTurn > 0) {
+            p.distanceUntilTurn -= Math.abs((v[0] * delta / 1000) + (v[1] * delta / 1000));
+        }
         if (s.waypoints.length) {
             let w = s.waypoints[0];
             if (    (
@@ -109,13 +112,16 @@ GameCore.prototype.playerUpdateVelocity = function(id, segment, turn) {
         throw new Error('Parameter \'turn\' required of type number in Utility.directions');
     }
     let s = this.players[id].segments[segment];
-    if (s.direction == turn || s.direction == Utility.directionReverse[turn]) {
+    if (s.direction == turn || s.direction == Utility.directionReverse[turn]) { //TODO: This needs to be checked before calling this function
         throw new Error('Provided direction must be perpendicular to current direction');
     }
     s.direction = turn;
     if (this.players[id].segments.length > segment + 1) {
         let sNext = this.players[id].segments[segment + 1];
         sNext.waypointAdd(s.x, s.y, turn);
+    }
+    if (segment == 0) {
+        this.players[id].distanceUntilTurn = s.size;
     }
 };
 
@@ -161,9 +167,38 @@ GameCore.prototype.playersList = function() {
 };
 
 GameCore.prototype.fruitCreate = function(id) {
-    // create a new Fruit object
-    return new Fruit(id, Math.trunc(Math.random() * this.width), Math.trunc(Math.random() * this.height));
-    //TODO: Location not occupied by other fruit or by the snake
+    let searching = true,
+        x = 0,
+        y = 0;
+    while (searching) {
+        searching = false;
+        x = Math.trunc(Math.random() * this.width);
+        y = Math.trunc(Math.random() * this.height);
+        for (let fruit in this.fruits) {
+            if (Utility.checkRectangularCollision(
+                {x: x - this.fruitRadius, y: y - this.fruitRadius, width: this.fruitRadius * 2, height: this.fruitRadius * 2},
+                {x: fruit.x - fruit.radius, y: fruit.y - fruit.radius, width: fruit.radius * 2, height: fruit.radius * 2}
+            )) {
+                searching = true;
+                break;
+            }
+        }
+        for (let player in this.players) {
+            for (let s = 0; s < this.players[player].segments.length; s++) {
+                if (Utility.checkRectangularCollision(
+                    {x: x - this.fruitRadius, y: y - this.fruitRadius, width: this.fruitRadius * 2, height: this.fruitRadius * 2},
+                    {x: this.players[player].segments[s].x, y: this.players[player].segments[s].y, width: this.players[player].segments[s].size, height: this.players[player].segments[s].size}
+                )) {
+                    searching = true;
+                    break;
+                }
+            }
+            if (searching) {
+                break;
+            }
+        }
+    }
+    return new Fruit(id, x, y, this.fruitRadius);
 };
 
 GameCore.prototype.fruitAdd = function(fruit) {
@@ -210,6 +245,7 @@ GameCore.prototype.fruitList = function() {
 };
 
 GameCore.prototype.checkFruitCollision = function(player) {
+    let fruitToDelete = [];
     let x = player.segments[0].x,
         y = player.segments[0].y,
         size = player.segments[0].size;
@@ -219,22 +255,22 @@ GameCore.prototype.checkFruitCollision = function(player) {
             {x: x, y: y, width: size, height: size},
             {x: fruit.x - fruit.radius, y: fruit.y - fruit.radius, width: fruit.radius * 2, height: fruit.radius * 2}
         )) {
-            this.fruitDelete(fruit.id);
-            player.segmentAdd();
+            fruitToDelete.push(fruit.id);
         }
     }
+    return fruitToDelete;
 };
 
 GameCore.prototype.checkWallCollision = function(player) {
     let segmentsToCheck = player.segments.length;
-    if (this.wallsKill) {
+    if (player.wallsKill) {
         segmentsToCheck = 1;
     }
     for (let i = 0; i < segmentsToCheck; i++) {
         let s = player.segments[i];
-        if (this.wallsKill) {
+        if (player.wallsKill) {
             if (s.y > this.height || s.y < 0 || s.x > this.width || s.x < 0) {
-                this.playerDelete(player.id);
+                return true;
             }
         } else {
             if (s.y > this.height) {
@@ -254,6 +290,42 @@ GameCore.prototype.checkWallCollision = function(player) {
             }
         }
     }
+};
+
+GameCore.prototype.checkSnakeCollision = function(player) {
+    // returns an array of player objects that should be killed
+    let playersToKill = [];
+    for (let p in this.players) {
+        let enemy = this.players[p];
+        if (enemy != player && player.enemyCollisionKills) {
+            for (let s = 0; s < enemy.segments.length; s++) {
+                if (Utility.checkRectangularCollision(
+                    {x: player.segments[0].x, y: player.segments[0].y, width: player.segments[0].size, height: player.segments[0].size},
+                    {x: enemy.segments[s].x, y: enemy.segments[s].y, width: enemy.segments[s].size, height: enemy.segments[s].size}
+                )) {
+                    playersToKill.push(player);
+                    if (s === 0) { // head on collision
+                        playersToKill.push(enemy);
+                    }
+                    break;
+                }
+            }
+            if (!player.isAlive) {
+                break;
+            }
+        } else if (enemy == player && player.selfCollisionKills) {
+            for (let s = 2; s < player.segments.length; s++) {
+                // s = 2 becuase no collision possible with 1st 2 segments
+                if (Utility.checkRectangularCollision(
+                    {x: player.segments[0].x, y: player.segments[0].y, width: player.segments[0].size, height: player.segments[0].size},
+                    {x: enemy.segments[s].x, y: enemy.segments[s].y, width: enemy.segments[s].size, height: enemy.segments[s].size}
+                )) {
+                    playersToKill.push(player);
+                }
+            }
+        }
+    }
+    return playersToKill;
 };
 
 module.exports = GameCore;

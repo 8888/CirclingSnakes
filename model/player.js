@@ -9,6 +9,11 @@ class Player {
         }
         this.id = id;
         this.segments = [];
+        this.isAlive = true;
+        this.wallsKill = true;
+        this.selfCollisionKills = true;
+        this.enemyCollisionKills = true;
+        this.distanceUntilTurn = 0;
         if (Number.isFinite(x) && Number.isFinite(y)) {
             this.segmentAdd(x, y);
         }
@@ -38,6 +43,10 @@ class Player {
                 s.direction, [], s.size
             ));
         }
+    }
+
+    kill() {
+        this.isAlive = false;
     }
 }
 
