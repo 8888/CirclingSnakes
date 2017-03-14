@@ -67,6 +67,7 @@ socket.on('gameJoin', function(data) {
 
 function playerFromData(playerData) {
     let p = new Player(playerData.id);
+    p.velocity = playerData.velocity;
     p.isAlive = playerData.isAlive;
     p.wallsKill = playerData.wallsKill;
     p.selfCollisionKills = playerData.selfCollisionKills;
@@ -113,7 +114,7 @@ socket.on('playersUpdate', function(data) {
 });
 socket.on('playerKilled', function(data) {
     /* { playerId: string } */
-    game.players[data.playerId].isAlive = false;
+    game.players[data.playerId].kill();
 });
 
 socket.on('fruitAdd', function(data) {
@@ -204,6 +205,14 @@ function display() {
     ctx.moveTo(0, 320);
     ctx.lineTo(640, 320);
     ctx.stroke();
+
+    // Respawn
+    if (game.players[playerId] && !game.players[playerId].isAlive) {
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.font = "30px Arial";
+        ctx.fillText("Respawning...", game.width / 2, game.height / 4);
+    }
 }
 
 window.onload = function() {

@@ -17,10 +17,10 @@ Utility.directionReverse[Utility.DIRECTION_SOUTH] = Utility.DIRECTION_NORTH;
 Utility.directionReverse[Utility.DIRECTION_EAST] = Utility.DIRECTION_WEST;
 Utility.directionReverse[Utility.DIRECTION_WEST] = Utility.DIRECTION_EAST;
 
-Utility.directionVelocity[Utility.DIRECTION_NORTH] = [0, -25];
-Utility.directionVelocity[Utility.DIRECTION_SOUTH] = [0, 25];
-Utility.directionVelocity[Utility.DIRECTION_EAST] = [25, 0];
-Utility.directionVelocity[Utility.DIRECTION_WEST] = [-25, 0];
+Utility.directionVelocity[Utility.DIRECTION_NORTH] = [0, -1];
+Utility.directionVelocity[Utility.DIRECTION_SOUTH] = [0, 1];
+Utility.directionVelocity[Utility.DIRECTION_EAST] = [1, 0];
+Utility.directionVelocity[Utility.DIRECTION_WEST] = [-1, 0];
 
 Utility.directions = [Utility.DIRECTION_NORTH, Utility.DIRECTION_EAST, Utility.DIRECTION_SOUTH, Utility.DIRECTION_WEST];
 Utility.directionsEW = [Utility.DIRECTION_EAST, Utility.DIRECTION_WEST];
