@@ -64,6 +64,15 @@ let fruitAdd = function(id) {
     io.emit('fruitAdd', { fruit: fruit });
 };
 
+let playerKill = function(player) {
+    player.kill();
+    io.emit('playerKilled', {playerId: player.id});
+    setTimeout(function() {
+        player.respawn(Math.trunc(Math.random() * game_server.width), Math.trunc(Math.random() * game_server.height));
+        io.emit('playersUpdate', {players: game_server.playersList()});
+    }, player.timeUntilRespawn);
+}
+
 let checkCollisions = function(player) {
     // Fruit collision
     if (game_server.fruits) {
@@ -79,15 +88,15 @@ let checkCollisions = function(player) {
     }
     // Wall collision
     if (game_server.checkWallCollision(player)) {   
-        player.kill();
-        io.emit('playerKilled', {playerId: player.id});
+        playerKill(player);
     }
     // Collision with other snakes
-    let collidedSnakes = game_server.checkSnakeCollision(player);
-    if (collidedSnakes) {
-        for (let p = 0; p < collidedSnakes.length; p++) {
-            collidedSnakes[p].kill();
-            io.emit('playerKilled', {playerId: collidedSnakes[p].id});
+    if (player.isAlive) {
+        let collidedSnakes = game_server.checkSnakeCollision(player);
+        if (collidedSnakes) {
+            for (let p = 0; p < collidedSnakes.length; p++) {
+                playerKill(collidedSnakes[p]);
+            }
         }
     }
 };

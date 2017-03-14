@@ -71,12 +71,12 @@ GameCore.prototype.playerUpdate = function(id, delta) {
     for (let i = 0, length = p.segments.length; i < length; i++) {
         let s = p.segments[i];
         let v = Utility.directionVelocity[s.direction];
-        let x = s.x + v[0] * delta / 1000,
-            y = s.y + v[1] * delta / 1000;  
+        let x = s.x + (v[0] * p.velocity) * delta / 1000,
+            y = s.y + (v[1] * p.velocity) * delta / 1000;  
         s.x = x;
         s.y = y;
         if ( i == 0 && p.distanceUntilTurn > 0) {
-            p.distanceUntilTurn -= Math.abs((v[0] * delta / 1000) + (v[1] * delta / 1000));
+            p.distanceUntilTurn -= Math.abs(((v[0] * p.velocity) * delta / 1000) + ((v[1] * p.velocity) * delta / 1000));
         }
         if (s.waypoints.length) {
             let w = s.waypoints[0];
@@ -89,6 +89,13 @@ GameCore.prototype.playerUpdate = function(id, delta) {
                         ((v[0] > 0 && s.x >= w.x) || (v[0] < 0 && s.x <= w.x))
                     )
                 ) {
+                /*
+                // Account for passing the waypoint
+                let dx = Math.abs(s.x - w.x),
+                    dy = Math.abs(s.y - w.y);
+                s.x += dy * Utility.directionVelocity[w.direction][0];
+                s.y += dx * Utility.directionVelocity[w.direction][1];
+                */
                 this.playerUpdateVelocity(id, i, w.direction);
                 s.waypoints.shift();
             }

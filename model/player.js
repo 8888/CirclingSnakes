@@ -9,11 +9,13 @@ class Player {
         }
         this.id = id;
         this.segments = [];
+        this.velocity = 100;
         this.isAlive = true;
         this.wallsKill = true;
         this.selfCollisionKills = true;
         this.enemyCollisionKills = true;
         this.distanceUntilTurn = 0;
+        this.timeUntilRespawn = 3000; // milliseconds
         if (Number.isFinite(x) && Number.isFinite(y)) {
             this.segmentAdd(x, y);
         }
@@ -47,6 +49,13 @@ class Player {
 
     kill() {
         this.isAlive = false;
+        this.segments = [];
+    }
+
+    respawn(x, y) {
+        this.segmentAdd(x, y);
+        this.segmentAdd();
+        this.isAlive = true;
     }
 }
 
