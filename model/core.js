@@ -72,7 +72,7 @@ GameCore.prototype.playerUpdate = function(id, delta) {
         let s = p.segments[i];
         let v = Utility.directionVelocity[s.direction];
         let x = s.x + (v[0] * p.velocity) * delta / 1000,
-            y = s.y + (v[1] * p.velocity) * delta / 1000;  
+            y = s.y + (v[1] * p.velocity) * delta / 1000;
         s.x = x;
         s.y = y;
         if ( i == 0 && p.distanceUntilTurn > 0) {
@@ -89,13 +89,22 @@ GameCore.prototype.playerUpdate = function(id, delta) {
                         ((v[0] > 0 && s.x >= w.x) || (v[0] < 0 && s.x <= w.x))
                     )
                 ) {
-                /*
                 // Account for passing the waypoint
                 let dx = Math.abs(s.x - w.x),
                     dy = Math.abs(s.y - w.y);
-                s.x += dy * Utility.directionVelocity[w.direction][0];
-                s.y += dx * Utility.directionVelocity[w.direction][1];
-                */
+                if (Utility.directionVelocity[s.direction][0] + Utility.directionVelocity[s.direction][1] + Utility.directionVelocity[w.direction][0] + Utility.directionVelocity[w.direction][1] == 0) {
+                    // E/N and W/S and S/W and N/E
+                    s.x += dy * Utility.directionVelocity[w.direction][0] + dx * Utility.directionVelocity[w.direction][1];
+                    s.y += dy * Utility.directionVelocity[w.direction][0] + dx * Utility.directionVelocity[w.direction][1];
+                } else if (Utility.directionsEW.indexOf(s.direction) > -1) {
+                    // E/S and W/N                
+                    s.x -= dy * Utility.directionVelocity[w.direction][0] + dx * Utility.directionVelocity[w.direction][1];
+                    s.y += dy * Utility.directionVelocity[w.direction][0] + dx * Utility.directionVelocity[w.direction][1];
+                } else {
+                    // S/E and N/W
+                    s.x += dy * Utility.directionVelocity[w.direction][0] + dx * Utility.directionVelocity[w.direction][1];
+                    s.y -= dy * Utility.directionVelocity[w.direction][0] + dx * Utility.directionVelocity[w.direction][1];
+                }
                 this.playerUpdateVelocity(id, i, w.direction);
                 s.waypoints.shift();
             }
