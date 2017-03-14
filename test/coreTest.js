@@ -229,6 +229,7 @@ describe('GameCore.playerUpdate', function() {
     });
     it('applies velocity based on delta', function() {
         gameCore.playerAdd(player);
+        player.velocity = 25;
         player.segments[0].direction = Utility.DIRECTION_EAST;
         gameCore.playerUpdate("asdf", 100);
         expect(player.segments[0].x).equal(8.5);
@@ -265,6 +266,140 @@ describe('GameCore.playerUpdate', function() {
         player.segments[1].waypoints.push({x: 6, y: 6, direction: Utility.DIRECTION_SOUTH});
         expect(function() { gameCore.playerUpdate("asdf", 100); })
             .change(player.segments[1], 'direction');
+    });
+    it('does not move segment past waypoint', function() {
+        gameCore.playerAdd(player);
+        player.velocity = 40;
+        player.segments[0].size = 2;
+        player.segments[0].direction = Utility.DIRECTION_EAST;
+        player.segmentAdd(undefined, undefined, undefined, 2);
+        player.segments[0].direction = Utility.DIRECTION_SOUTH;
+        player.segments[1].waypoints.push({x: 6, y: 6, direction: Utility.DIRECTION_SOUTH});
+        gameCore.playerUpdate("asdf", 100);
+        expect(player.segments[1].x).equal(player.segments[0].x);
+    });
+    it('passing waypoint is applied in the new direction -- EAST/SOUTH', function() {
+        gameCore.playerAdd(player);
+        player.velocity = 40;
+        player.segments[0].size = 2;
+        player.segments[0].direction = Utility.DIRECTION_EAST;
+        player.segmentAdd(undefined, undefined, undefined, 2);
+        player.segments[0].direction = Utility.DIRECTION_SOUTH;
+        player.segments[1].waypoints.push({x: 6, y: 6, direction: Utility.DIRECTION_SOUTH});
+        gameCore.playerUpdate("asdf", 100);
+        expect(player.segments[1].x).equal(6);
+        expect(player.segments[1].y).equal(8);
+    });
+    it('passing waypoint is applied in the new direction -- EAST/NORTH', function() {
+        gameCore.playerAdd(player);
+        player.velocity = 40;
+        player.segments[0].size = 2;
+        player.segments[0].direction = Utility.DIRECTION_EAST;
+        player.segmentAdd(undefined, undefined, undefined, 2);
+        player.segments[0].direction = Utility.DIRECTION_NORTH;
+        player.segments[1].waypoints.push({x: 6, y: 6, direction: Utility.DIRECTION_NORTH});
+        gameCore.playerUpdate("asdf", 100);
+        expect(player.segments[1].x).equal(6);
+        expect(player.segments[1].y).equal(4);
+    });
+    it('passing waypoint is applied in the new direction -- WEST/SOUTH', function() {
+        gameCore.playerAdd(player);
+        player.velocity = 40;
+        player.segments[0].size = 2;
+        player.segments[0].direction = Utility.DIRECTION_WEST;
+        player.segmentAdd(undefined, undefined, undefined, 2);
+        player.segments[0].direction = Utility.DIRECTION_SOUTH;
+        player.segments[1].waypoints.push({x: 6, y: 6, direction: Utility.DIRECTION_SOUTH});
+        gameCore.playerUpdate("asdf", 100);
+        expect(player.segments[1].x).equal(6);
+        expect(player.segments[1].y).equal(8);
+    });
+    it('passing waypoint is applied in the new direction -- WEST/NORTH', function() {
+        gameCore.playerAdd(player);
+        player.velocity = 40;
+        player.segments[0].size = 2;
+        player.segments[0].direction = Utility.DIRECTION_WEST;
+        player.segmentAdd(undefined, undefined, undefined, 2);
+        player.segments[0].direction = Utility.DIRECTION_NORTH;
+        player.segments[1].waypoints.push({x: 6, y: 6, direction: Utility.DIRECTION_NORTH});
+        gameCore.playerUpdate("asdf", 100);
+        expect(player.segments[1].x).equal(6);
+        expect(player.segments[1].y).equal(4);
+    });
+    it('passing waypoint is applied in the new direction -- SOUTH/EAST', function() {
+        gameCore.playerAdd(player);
+        player.velocity = 40;
+        player.segments[0].size = 2;
+        player.segments[0].direction = Utility.DIRECTION_SOUTH;
+        player.segmentAdd(undefined, undefined, undefined, 2);
+        player.segments[0].direction = Utility.DIRECTION_EAST;
+        player.segments[1].waypoints.push({x: 6, y: 6, direction: Utility.DIRECTION_EAST});
+        gameCore.playerUpdate("asdf", 100);
+        expect(player.segments[1].x).equal(8);
+        expect(player.segments[1].y).equal(6);
+    });
+    it('passing waypoint is applied in the new direction -- SOUTH/WEST', function() {
+        gameCore.playerAdd(player);
+        player.velocity = 40;
+        player.segments[0].size = 2;
+        player.segments[0].direction = Utility.DIRECTION_SOUTH;
+        player.segmentAdd(undefined, undefined, undefined, 2);
+        player.segments[0].direction = Utility.DIRECTION_WEST;
+        player.segments[1].waypoints.push({x: 6, y: 6, direction: Utility.DIRECTION_WEST});
+        gameCore.playerUpdate("asdf", 100);
+        expect(player.segments[1].x).equal(4);
+        expect(player.segments[1].y).equal(6);
+    });
+    it('passing waypoint is applied in the new direction -- NORTH/EAST', function() {
+        gameCore.playerAdd(player);
+        player.velocity = 40;
+        player.segments[0].size = 2;
+        player.segments[0].direction = Utility.DIRECTION_NORTH;
+        player.segmentAdd(undefined, undefined, undefined, 2);
+        player.segments[0].direction = Utility.DIRECTION_EAST;
+        player.segments[1].waypoints.push({x: 6, y: 6, direction: Utility.DIRECTION_EAST});
+        gameCore.playerUpdate("asdf", 100);
+        expect(player.segments[1].x).equal(8);
+        expect(player.segments[1].y).equal(6);
+    });
+    it('passing waypoint is applied in the new direction -- NORTH/WEST', function() {
+        gameCore.playerAdd(player);
+        player.velocity = 40;
+        player.segments[0].size = 2;
+        player.segments[0].direction = Utility.DIRECTION_NORTH;
+        player.segmentAdd(undefined, undefined, undefined, 2);
+        player.segments[0].direction = Utility.DIRECTION_WEST;
+        player.segments[1].waypoints.push({x: 6, y: 6, direction: Utility.DIRECTION_WEST});
+        gameCore.playerUpdate("asdf", 100);
+        expect(player.segments[1].x).equal(4);
+        expect(player.segments[1].y).equal(6);
+    });
+    it('segments stay aligned', function() {
+        gameCore.playerAdd(player);
+        player.velocity = 40;
+        player.segments[0].size = 2;
+        player.segments[0].direction = Utility.DIRECTION_EAST;
+        player.segmentAdd(undefined, undefined, undefined, 2);
+        // 500 delta = moving 20px
+        gameCore.playerUpdate("asdf", 100);
+        gameCore.playerUpdate("asdf", 400);
+        expect(player.segments[1].y).equal(player.segments[0].y);
+        gameCore.playerUpdateVelocity("asdf", 0, Utility.DIRECTION_SOUTH);
+        gameCore.playerUpdate("asdf", 100);
+        gameCore.playerUpdate("asdf", 400);
+        expect(player.segments[1].x).equal(player.segments[0].x);
+        gameCore.playerUpdateVelocity("asdf", 0, Utility.DIRECTION_WEST);
+        gameCore.playerUpdate("asdf", 100);
+        gameCore.playerUpdate("asdf", 400);
+        expect(player.segments[1].y).equal(player.segments[0].y);
+        gameCore.playerUpdateVelocity("asdf", 0, Utility.DIRECTION_NORTH);
+        gameCore.playerUpdate("asdf", 100);
+        gameCore.playerUpdate("asdf", 400);
+        expect(player.segments[1].x).equal(player.segments[0].x);
+        gameCore.playerUpdateVelocity("asdf", 0, Utility.DIRECTION_EAST);
+        gameCore.playerUpdate("asdf", 100);
+        gameCore.playerUpdate("asdf", 400);
+        expect(player.segments[1].y).equal(player.segments[0].y);
     });
 });
 
