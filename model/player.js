@@ -52,8 +52,8 @@ class Player {
         this.segments = [];
     }
 
-    respawn(x, y) {
-        this.segmentAdd(x, y);
+    respawn(x, y, direction) {
+        this.segmentAdd(x, y, direction);
         this.segmentAdd();
         this.isAlive = true;
     }

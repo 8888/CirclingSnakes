@@ -4,7 +4,9 @@ var express = require('express'),
     http = require('http').Server(app),
     io = require('socket.io')(http),
     path = require('path'),
-    port = 3000;
+    port = 3000,
+    Utility = require('../model/utility.js');
+
 
 /* express server */
 app.use('/', express.static(path.join(__dirname, '../')));
@@ -68,10 +70,16 @@ let playerKill = function(player) {
     player.kill();
     io.emit('playerKilled', {playerId: player.id});
     setTimeout(function() {
-        player.respawn(Math.trunc(Math.random() * game_server.width), Math.trunc(Math.random() * game_server.height));
+        let x = Math.trunc(Math.random() * game_server.width),
+            y = Math.trunc(Math.random() * game_server.height),
+            direction = Utility.DIRECTION_EAST;
+        if (x > game_server.width / 2) {
+            direction = Utility.DIRECTION_WEST;
+        }
+        player.respawn(x, y, direction);
         io.emit('playersUpdate', {players: game_server.playersList()});
     }, player.timeUntilRespawn);
-}
+};
 
 let checkCollisions = function(player) {
     // Fruit collision
