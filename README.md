@@ -11,8 +11,8 @@ The current graphics are dev style to allow for effective and quick development 
 
 
 ## Screenshots
-<img src="https://github.com/betterin30days/CirclingSnakes/blob/documentation/screenshots/singleuser.JPG"><br>
-<img src="https://github.com/betterin30days/CirclingSnakes/blob/documentation/screenshots/multiuser.JPG"><br>
+<img src="https://github.com/betterin30days/CirclingSnakes/blob/master/screenshots/singleuser.JPG"><br>
+<img src="https://github.com/betterin30days/CirclingSnakes/blob/master/screenshots/multiuser.JPG"><br>
 
 
 ## How to build
