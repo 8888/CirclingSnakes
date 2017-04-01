@@ -10,9 +10,9 @@ The server and the local browser both continuously run the game logic. The local
 The current graphics are dev style to allow for effective and quick development of game and network logic. They are drawn using an HTML5 canvas.
 
 
-## Screenshots
-<img src="https://github.com/betterin30days/CirclingSnakes/blob/master/screenshots/singleuser.JPG"><br>
-<img src="https://github.com/betterin30days/CirclingSnakes/blob/master/screenshots/multiuser.JPG"><br>
+## Gameplay
+<img src="https://github.com/betterin30days/CirclingSnakes/blob/master/screenshots/snakes.gif"><br>
+*While collision with walls usually kills snakes, this can be toggled on and off*
 
 
 ## How to build
